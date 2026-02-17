@@ -1,261 +1,224 @@
 import streamlit as st
+import streamlit.components.v1 as components # Necessário para o Calendário
 from datetime import datetime, date
 from PIL import Image, ImageDraw, ImageFont
 import io
 import textwrap
 
-# --- CONFIGURAÇÕES INICIAIS ---
-NUMERO_WHATSAPP_MAE = "5521969293505" 
+# --- CONFIGURAÇÕES ---
+st.set_page_config(page_title="Gestão de Limpeza", page_icon="🧹", layout="centered")
 
-st.set_page_config(
-    page_title="Agenda de Limpeza da Sandra",
-    page_icon="🧹",
-    layout="centered"
-)
-
-# --- ESTILOS CSS (Para interface do app) ---
+# --- ESTILOS CSS ---
 st.markdown("""
     <style>
-    .stButton>button {
-        width: 100%; border-radius: 8px; height: 3.5em;
-        background-color: #2e7d32; color: white; font-weight: bold; /* Verde Sandra */
-    }
-    .instruction-box {
-        background-color: #e8f5e9; padding: 15px; border-radius: 10px;
-        border-left: 5px solid #2e7d32; margin-bottom: 10px; font-size: 14px;
-    }
+    .stButton>button { width: 100%; border-radius: 8px; height: 3em; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# FUNÇÃO DE GERAR IMAGEM (O "CÉREBRO" DO CÓDIGO)
+# 1. FUNÇÃO GERADORA DE IMAGEM
 # ==============================================================================
-def criar_cartao_sandra(dados, checklist_items):
-    # Altura base dinâmica
-    height = 950
-    if checklist_items:
-        height += len(checklist_items) * 40 + 50
-    
-    # Se tiver muitas instruções de acesso/obs, aumenta a imagem
-    if len(dados.get("Obs", "")) > 100: height += 100
-    if len(dados.get("Acesso", "")) > 100: height += 100
-
+def criar_imagem(dados, tipo):
     width = 800
+    height = 1000 if tipo == "imovel" else 700 # Altura ajustada
+    
     background_color = "white"
     image = Image.new("RGB", (width, height), background_color)
     draw = ImageDraw.Draw(image)
 
-    # --- FONTES ---
+    # --- FONTES (Tenta carregar ou usa padrão) ---
     try:
         font_title = ImageFont.truetype("DejaVuSans-Bold.ttf", 45)
-        font_header = ImageFont.truetype("DejaVuSans-Bold.ttf", 28)
-        font_sub = ImageFont.truetype("DejaVuSans-Bold.ttf", 24)
+        font_header = ImageFont.truetype("DejaVuSans-Bold.ttf", 26)
         font_text = ImageFont.truetype("DejaVuSans.ttf", 24)
-        font_small = ImageFont.truetype("DejaVuSans.ttf", 20)
+        font_big = ImageFont.truetype("DejaVuSans-Bold.ttf", 55)
     except:
         font_title = ImageFont.load_default()
         font_header = ImageFont.load_default()
-        font_sub = ImageFont.load_default()
         font_text = ImageFont.load_default()
-        font_small = ImageFont.load_default()
+        font_big = ImageFont.load_default()
 
-    # --- CABEÇALHO VERDE ---
-    draw.rectangle([(0, 0), (width, 140)], fill="#2e7d32") # Verde Escuro
-    draw.text((30, 30), "AGENDA & CHECKLIST", font=font_title, fill="white")
-    draw.text((30, 90), f"Profissional: Sandra | Data: {dados['Data']}", font=font_text, fill="#e8f5e9")
+    # --- CABEÇALHO ---
+    if tipo == "imovel":
+        cor_topo = "#0277bd" # Azul
+        titulo = "FICHA DO IMÓVEL"
+        subtitulo = f"Propriedade: {dados.get('Propriedade', '-')}"
+    else:
+        cor_topo = "#2e7d32" # Verde
+        titulo = "ORDEM DE SERVIÇO"
+        subtitulo = f"Data da Limpeza: {dados.get('Data', '-')}"
 
-    y = 170
-    margin = 40
+    draw.rectangle([(0, 0), (width, 150)], fill=cor_topo)
+    draw.text((40, 40), titulo, font=font_title, fill="white")
+    draw.text((40, 100), subtitulo, font=font_text, fill="#e1f5fe" if tipo=="imovel" else "#e8f5e9")
 
-    # --- BLOCO 1: IDENTIFICAÇÃO E ACESSO ---
-    draw.text((margin, y), "📍 LOCAL E ACESSO", font=font_header, fill="#1b5e20")
-    y += 40
-    
-    # Cliente e Endereço
-    draw.text((margin, y), f"Cliente: {dados['Cliente']}", font=font_sub, fill="#333")
-    y += 35
-    linhas_end = textwrap.wrap(f"Endereço: {dados['Endereço']}", width=60)
-    for l in linhas_end:
-        draw.text((margin, y), l, font=font_text, fill="#555")
-        y += 30
-    
-    y += 15
-    # Caixa de destaque para Acesso (Chaves/Senha)
-    draw.rectangle([(margin, y), (width-margin, y+90)], fill="#fffde7", outline="#fbc02d", width=2)
-    draw.text((margin+15, y+10), "🔑 INSTRUÇÕES DE ENTRADA:", font=font_sub, fill="#f57f17")
-    
-    linhas_acesso = textwrap.wrap(dados['Acesso'], width=55)
-    y_acesso = y + 45
-    for l in linhas_acesso:
-        draw.text((margin+15, y_acesso), l, font=font_text, fill="#333")
-        y_acesso += 30
-    
-    y += 110 # Pula a caixa amarela
+    y = 190
+    margin = 50
 
-    draw.line([(margin, y), (width-margin, y)], fill="#eee", width=2)
-    y += 20
-
-    # --- BLOCO 2: PREFERÊNCIAS (ROUPAS, LIXO, ETC) ---
-    draw.text((margin, y), "🛏️ PREFERÊNCIAS E ROTINA", font=font_header, fill="#1b5e20")
-    y += 40
-
-    infos_rapidas = [
-        f"Camas: {dados['Camas']}",
-        f"Toalhas: {dados['Toalhas']}",
-        f"Roupa Suja: {dados['Roupa Suja']}",
-        f"Lixo: {dados['Lixo']}",
-        f"Aspirador: {dados['Aspirador']}",
-        f"Repor: {dados['Amenities']}"
-    ]
-
-    for info in infos_rapidas:
-        draw.rectangle([(margin, y+5), (margin+10, y+15)], fill="#2e7d32") # Bullet point quadrado
-        draw.text((margin+20, y), info, font=font_text, fill="#444")
-        y += 35
-
-    y += 20
-    draw.line([(margin, y), (width-margin, y)], fill="#eee", width=2)
-    y += 20
-
-    # --- BLOCO 3: CHECKLIST TÉCNICO ---
-    if checklist_items:
-        draw.text((margin, y), "📋 TAREFAS ESPECÍFICAS (CHECKLIST)", font=font_header, fill="#1b5e20")
-        y += 45
+    # ---------------------------------------------------------
+    # LAYOUT 1: FICHA TÉCNICA (Regras Fixas)
+    # ---------------------------------------------------------
+    if tipo == "imovel":
+        secoes = [
+            ("🛏 QUARTO E BANHO", ["Montagem", "Toalhas", "Roupa Suja"]),
+            ("🪣 OPERACIONAL", ["Produtos", "Amenities", "Geladeira", "Lixo"]),
+            ("🔑 ACESSO", ["Entrada"])
+        ]
         
-        for item in checklist_items:
-            # Checkbox vazio [ ]
-            draw.rectangle([(margin, y+5), (margin+20, y+25)], outline="#333", width=2)
-            draw.text((margin+35, y), item, font=font_text, fill="#333")
+        for titulo_grupo, chaves in secoes:
+            draw.text((margin, y), titulo_grupo, font=font_header, fill=cor_topo)
             y += 40
-
-    # --- OBSERVAÇÕES FINAIS ---
-    if dados['Obs']:
-        y += 20
-        draw.rectangle([(0, y), (width, y+40)], fill="#eee")
-        draw.text((margin, y+8), "⚠️ OBSERVAÇÕES EXTRAS", font=font_sub, fill="#333")
-        y += 50
-        linhas_obs = textwrap.wrap(dados['Obs'], width=60)
-        for l in linhas_obs:
-            draw.text((margin, y), l, font=font_text, fill="#555")
+            
+            for chave in chaves:
+                # Pergunta (chave) e Resposta (valor)
+                valor = dados.get(chave, "-")
+                
+                # Desenha o rótulo (ex: "Lixo:")
+                draw.text((margin, y), f"{chave}:", font=font_header, fill="#444")
+                y += 35
+                
+                # Desenha a resposta com quebra de linha
+                linhas = textwrap.wrap(str(valor), width=55)
+                for linha in linhas:
+                    draw.text((margin, y), linha, font=font_text, fill="#666")
+                    y += 30
+                y += 15
+            
+            y += 10
+            draw.line([(margin, y), (width-margin, y)], fill="#eee", width=2)
             y += 30
 
+    # ---------------------------------------------------------
+    # LAYOUT 2: ROTINA (Dia a Dia)
+    # ---------------------------------------------------------
+    else:
+        # Destaque para Hóspedes
+        draw.rectangle([(margin, y), (width-margin, y+130)], fill="#f1f8e9", outline="#2e7d32", width=2)
+        draw.text((margin+20, y+20), "👥 NÚMERO DE HÓSPEDES:", font=font_header, fill="#2e7d32")
+        draw.text((margin+20, y+60), str(dados['Hóspedes']), font=font_big, fill="#333")
+        
+        y += 170
+        
+        # Observações Específicas
+        draw.text((margin, y), "⚠️ OBSERVAÇÕES / PEDIDOS:", font=font_header, fill="#d84315")
+        y += 40
+        
+        obs_texto = dados.get('Obs', '')
+        if not obs_texto: obs_texto = "Seguir o padrão da Ficha do Imóvel."
+        
+        linhas = textwrap.wrap(obs_texto, width=50)
+        for linha in linhas:
+            draw.text((margin, y), linha, font=font_text, fill="#333")
+            y += 35
+
     # Rodapé
-    draw.text((margin, height-40), "Gerado via App Agenda da Sandra", font=font_small, fill="#aaa")
+    draw.text((margin, height-50), "Gerado via App de Gestão de Limpeza", font=font_text, fill="#aaa")
 
     return image
 
 # ==============================================================================
-# INTERFACE DO STREAMLIT
+# 2. INTERFACE DO APP
 # ==============================================================================
-st.title("🧹 Agenda & Check-list da Sandra")
-st.markdown("Verifique a disponibilidade e gere a ordem de serviço.")
+st.title("🧹 Gestão de Limpeza")
 
-tab_agenda, tab_servico = st.tabs(["📅 Ver Disponibilidade", "📝 Criar Ordem de Serviço"])
+# Menu Lateral
+with st.sidebar:
+    st.header("Menu")
+    modo = st.radio("Selecione:", ["📅 1. Rotina (Estadia)", "🏢 2. Ficha do Imóvel (Cadastro)"])
+    st.info("Use a **Ficha do Imóvel** para cadastrar as regras fixas. Use a **Rotina** para agendar limpezas pontuais.")
 
-# --- ABA 1: CALENDÁRIO (Mantido do código novo) ---
-with tab_agenda:
-    st.info("💡 Dica: Se o dia não aparece na lista abaixo, ele está **LIVRE**!")
-    calendar_url = "https://calendar.google.com/calendar/embed?src=sandramjo26%40gmail.com&ctz=America%2FSao_Paulo&mode=AGENDA&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTz=0&bgcolor=%23ffffff"
-    st.components.v1.iframe(calendar_url, height=500, scrolling=True)
-
-# --- ABA 2: FORMULÁRIO COMPLETO (Fusão) ---
-with tab_servico:
-    with st.form("form_ordem_servico"):
-        st.subheader("1. Identificação")
-        col_d1, col_d2 = st.columns(2)
-        data_servico = col_d1.date_input("Data da Limpeza", datetime.now())
-        nome_cliente = col_d2.text_input("Nome do Cliente")
-        endereco = st.text_input("Endereço / Apto")
-
-        st.divider()
+# ------------------------------------------------------------------------------
+# MODO 1: ROTINA DA ESTADIA (COM AGENDA)
+# ------------------------------------------------------------------------------
+if "1." in modo:
+    st.subheader("📅 Agendamento de Limpeza")
+    
+    # Abas para separar a visualização da agenda do preenchimento
+    tab_agenda, tab_form = st.tabs(["🔍 Ver Disponibilidade", "📝 Preencher Ordem de Serviço"])
+    
+    with tab_agenda:
+        st.markdown("**Consulte abaixo os dias livres na agenda:**")
         
-        st.subheader("2. Acesso e Instruções (Importante)")
-        tipo_entrada = st.selectbox("Como entro no imóvel?", 
-            ["Senha na Fechadura", "Chave na Portaria", "Lockbox (Cofre)", "Tag / Porteiro", "Tem gente em casa"])
-        
-        detalhes_acesso = st.text_area("Detalhes do Acesso (Senhas, onde está a chave, Wi-Fi):", 
-            placeholder="Ex: Senha 1234. Wi-Fi: Casa123. A chave fica no cofre atrás do vaso.")
+        # --- CÓDIGO DO CALENDÁRIO ---
+        # Substitua 'sandramjo26%40gmail.com' pelo seu ID se for diferente
+        # mode=AGENDA deixa em formato de lista (melhor para celular)
+        calendar_url = (
+            "https://calendar.google.com/calendar/embed?"
+            "src=sandramjo26%40gmail.com&ctz=America%2FSao_Paulo"
+            "&mode=AGENDA&showTitle=0&showNav=1&showDate=1&showPrint=0"
+            "&showTabs=0&showCalendars=0&showTz=0&bgcolor=%23ffffff"
+        )
+        components.iframe(calendar_url, height=500, scrolling=True)
+        st.caption("ℹ️ Se o dia não aparece na lista, ele está livre.")
 
-        st.divider()
-
-        st.subheader("3. Preferências e Rotina")
-        c1, c2 = st.columns(2)
-        cama_pref = c1.radio("Camas:", ["Fazer Completa", "Apenas Dobrar", "Não Mexer"])
-        toalha_pref = c2.radio("Toalhas:", ["No Banheiro", "Em cima da Cama", "Não Mexer"])
-        
-        roupa_suja = st.selectbox("Roupa Suja:", ["Não tem", "Lavar na Máquina", "Apenas retirar e por no cesto"])
-        lixo_instrucao = st.text_input("Onde descarto o lixo?", placeholder="Ex: Lixeira do andar, Tubo, Levar pra rua...")
-        aspirador = st.selectbox("Aspirador:", ["Tem e funciona", "Não tem (usar vassoura)", "Tem mas é fraco"])
-        
-        amenities = st.multiselect("Repor (Se houver no estoque):", 
-            ["Papel Higiênico", "Sabonete", "Detergente", "Saco de Lixo", "Cápsula Café"])
-
-        st.divider()
-
-        st.subheader("4. Checklist Técnico (O que focar?)")
-        st.caption("Marque o que precisa de atenção especial hoje:")
-        
-        tarefas_selecionadas = []
-        
-        with st.expander("🍽️ Cozinha", expanded=True):
-            if st.checkbox("Limpar interior do micro-ondas"): tarefas_selecionadas.append("Limpar Micro-ondas")
-            if st.checkbox("Limpar Geladeira (Descartar itens abertos)"): tarefas_selecionadas.append("Limpar Geladeira (Descarte)")
-            if st.checkbox("Limpar Forno"): tarefas_selecionadas.append("Limpar Forno")
-        
-        with st.expander("🛁 Banheiros"):
-            if st.checkbox("Lavar Box e Ralos"): tarefas_selecionadas.append("Lavar Box/Ralos")
-            if st.checkbox("Limpar Espelhos"): tarefas_selecionadas.append("Limpar Espelhos")
-            if st.checkbox("Limpar Vidros/Janelas"): tarefas_selecionadas.append("Limpar Vidros")
-
-        with st.expander("🛏️ Quartos/Sala"):
-            if st.checkbox("Aspirar Sofá"): tarefas_selecionadas.append("Aspirar Sofá")
-            if st.checkbox("Limpar embaixo das camas"): tarefas_selecionadas.append("Limpar sob camas")
-            if st.checkbox("Tirar pó persianas"): tarefas_selecionadas.append("Pó Persianas")
-
-        obs_geral = st.text_area("Outras observações:")
-
-        # Botão
-        submitted = st.form_submit_button("✅ Gerar Cartão de Serviço")
-
-    # --- PÓS ENVIO: GERAÇÃO DA IMAGEM ---
-    if submitted:
-        if not nome_cliente:
-            st.error("Preencha o nome do cliente!")
-        else:
-            # Prepara dados
-            amenities_str = ", ".join(amenities) if amenities else "Nada"
+    with tab_form:
+        st.write("Preencha os dados variáveis desta estadia:")
+        with st.form("form_rotina"):
+            col1, col2 = st.columns(2)
+            data_limpeza = col1.date_input("Data da Limpeza", date.today())
+            hospedes = col2.text_input("Hóspedes (Qtd):", placeholder="Ex: 2 adultos, 1 bebê")
             
-            dados_imagem = {
-                "Cliente": nome_cliente,
-                "Data": data_servico.strftime("%d/%m/%Y"),
-                "Endereço": endereco,
-                "Acesso": f"{tipo_entrada}. {detalhes_acesso}",
-                "Camas": cama_pref,
-                "Toalhas": toalha_pref,
-                "Roupa Suja": roupa_suja,
-                "Lixo": lixo_instrucao if lixo_instrucao else "Perguntar portaria",
-                "Aspirador": aspirador,
-                "Amenities": amenities_str,
-                "Obs": obs_geral
+            st.markdown("---")
+            obs = st.text_area("Observações Específicas (Opcional):", placeholder="Ex: Atenção à mancha no tapete...")
+            
+            submit_rotina = st.form_submit_button("🚀 Gerar Ordem (Verde)")
+        
+        if submit_rotina:
+            dados = {
+                "Data": data_limpeza.strftime("%d/%m/%Y"),
+                "Hóspedes": hospedes if hospedes else "Não informado",
+                "Obs": obs
             }
-
-            # Gera Imagem
-            imagem_final = criar_cartao_sandra(dados_imagem, tarefas_selecionadas)
+            img = criar_imagem(dados, "rotina")
+            st.success("Ordem de Serviço gerada!")
+            st.image(img, use_container_width=True)
             
-            st.success("Cartão Gerado com Sucesso!")
-            st.image(imagem_final, caption="Prévia do Cartão", use_container_width=True)
-
-            # Botões de Download e Ação
             buf = io.BytesIO()
-            imagem_final.save(buf, format="PNG")
-            byte_im = buf.getvalue()
+            img.save(buf, format="PNG")
+            st.download_button("⬇️ Baixar Imagem", buf.getvalue(), "ordem_servico.png", "image/png")
 
-            c1, c2 = st.columns(2)
-            with c1:
-                st.download_button("⬇️ Baixar Imagem", data=byte_im, file_name=f"faxina_{nome_cliente}.png", mime="image/png")
-            with c2:
-                # Link WhatsApp apenas chamando a Sandra, pois a pessoa envia a imagem
-                link_zap = f"https://wa.me/{NUMERO_WHATSAPP_MAE}?text=Olá Sandra, segue o cartão com as instruções da limpeza:"
-                st.link_button("📲 Abrir WhatsApp da Sandra", link_zap)
-            
-            st.info("👆 Dica: Baixe a imagem e envie para a Sandra junto com a mensagem!")
+# ------------------------------------------------------------------------------
+# MODO 2: FICHA DO IMÓVEL (CADASTRO FIXO)
+# ------------------------------------------------------------------------------
+else:
+    st.subheader("🏢 Ficha Técnica (Regras Fixas)")
+    st.write("Preencha as orientações fixas do apartamento.")
+    
+    with st.form("form_imovel"):
+        propriedade = st.text_input("Nome/Número do Imóvel:")
+        
+        st.markdown("### 🛏 QUARTO E BANHO")
+        montagem = st.radio("Montagem:", ["Camas Feitas", "Roupas Dobradas"])
+        toalhas = st.text_input("Toalhas (Onde deixar?):", placeholder="Cama, Banheiro, Rack...")
+        roupa_suja = st.radio("Roupa Suja:", ["Lavar na máquina do apto", "Apenas retirar"])
+        
+        st.markdown("### 🪣 OPERACIONAL")
+        produtos = st.radio("Produtos/Equipamentos:", ["Cliente Fornece", "Prestador Leva"])
+        amenities = st.text_input("Amenities (Qtd Padrão):", placeholder="Ex: 2 papéis, 1 sabonete")
+        geladeira = st.radio("Geladeira:", ["Descartar tudo", "Manter fechados"])
+        lixo = st.text_input("Lixo (Descarte Final):", placeholder="Ex: Lixeira do corredor")
+        
+        st.markdown("### 🔑 ACESSO")
+        entrada = st.text_area("Como será a entrada?", placeholder="Senha, chaves, portaria...")
+        
+        submit_imovel = st.form_submit_button("💾 Gerar Ficha Técnica (Azul)")
+        
+    if submit_imovel:
+        dados = {
+            "Propriedade": propriedade,
+            "Montagem": montagem,
+            "Toalhas": toalhas,
+            "Roupa Suja": roupa_suja,
+            "Produtos": produtos,
+            "Amenities": amenities,
+            "Geladeira": geladeira,
+            "Lixo": lixo,
+            "Entrada": entrada
+        }
+        img = criar_imagem(dados, "imovel")
+        st.success("Ficha Técnica gerada!")
+        st.image(img, use_container_width=True)
+        
+        buf = io.BytesIO()
+        img.save(buf, format="PNG")
+        st.download_button("⬇️ Baixar Ficha", buf.getvalue(), "ficha_imovel.png", "image/png")
