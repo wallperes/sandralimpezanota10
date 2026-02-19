@@ -50,10 +50,13 @@ def criar_imagem_profissional(dados, tipo):
     y_pos, margin = 200, 50
 
     if tipo == "imovel":
-        categorias =),
+        # Correção da sintaxe e definição das categorias
+        categorias = [
+            ("🛏️ QUARTO E ROUPARIA", ["Montagem", "Toalhas", "Roupa Suja"]),
             ("🪣 PROTOCOLO OPERACIONAL", ["Produtos", "Amenities", "Geladeira", "Lixo"]),
             ("🔑 LOGÍSTICA DE ACESSO", ["Entrada"])
         ]
+        
         for cat_nome, campos in categorias:
             draw.text((margin, y_pos), cat_nome, font=font_header, fill=cor_topo)
             y_pos += 45
@@ -92,9 +95,9 @@ def injetar_botao_compartilhar(img, texto_corpo, nome_arquivo="ordem_servico.png
     img.save(buffered, format="PNG")
     b64_data = base64.b64encode(buffered.getvalue()).decode()
     
-    # Injeção de JavaScript para interface com Navigator API 
+    # Injeção de JavaScript corrigida (Removido artefato displ[span_15]...)
     js_interface = f"""
-    <div style="displ[span_15](start_span)[span_15](end_span)ay: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; font-family: sans-serif;">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; font-family: sans-serif;">
         <button id="btnShare" style="
             background-color: #25D366; color: white; border: none; padding: 14px 28px; 
             border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; 
@@ -145,11 +148,13 @@ st.title("🧹 Gestão de Limpeza")
 
 with st.sidebar:
     st.header("Navegação")
-    opcao = st.radio("Selecione o Fluxo:",)
+    # Adicionadas as opções na estrutura radio
+    opcao = st.radio("Selecione o Fluxo:", ["Rotina Operacional", "Ficha do Imóvel"])
 
 if "Rotina" in opcao:
     st.subheader("📅 Agendamento Operacional")
-    tab_vis, tab_form = st.tabs()
+    # Adicionados os nomes das abas
+    tab_vis, tab_form = st.tabs(["Calendário", "Nova Ordem"])
     
     with tab_vis:
         cal_url = "https://calendar.google.com/calendar/embed?src=sandramjo26%40gmail.com&mode=AGENDA"
@@ -168,8 +173,9 @@ if "Rotina" in opcao:
             img_os = criar_imagem_profissional(payload, "rotina")
             st.image(img_os, use_container_width=True)
             
-            msg_whatsapp = f"Olá! Segue a Ordem de Serviço para o dia {payload}. Hóspedes: {payload['Hóspedes']}. Observações: {payload['Obs']}"
-            injetar_botao_compartilhar(img_os, msg_whatsapp, f"OS_{payload.replace('/','-')}.png")
+            # Corrigido o erro ao usar format() diretamente no objeto do dicionário (payload)
+            msg_whatsapp = f"Olá! Segue a Ordem de Serviço para o dia {payload['Data']}. Hóspedes: {payload['Hóspedes']}. Observações: {payload['Obs']}"
+            injetar_botao_compartilhar(img_os, msg_whatsapp, f"OS_{payload['Data'].replace('/','-')}.png")
 
 else:
     st.subheader("🏢 Ficha de Regras Fixas")
@@ -177,9 +183,10 @@ else:
         prop = st.text_input("Nome/Código do Imóvel:")
         st.markdown("---")
         c1, c2 = st.columns(2)
-        mnt = c1.radio("Montagem das Camas:",)
+        # Adicionadas as opções aos itens
+        mnt = c1.radio("Montagem das Camas:", ["Padrão", "Camas Separadas"])
         tua = c2.text_input("Localização das Toalhas:", placeholder="Ex: Prateleira superior")
-        rps = c1.radio("Processamento de Roupa Suja:",)
+        rps = c1.radio("Processamento de Roupa Suja:", ["Lavar no Local", "Recolher p/ Lavanderia"])
         prd = c2.radio("Fornecimento de Insumos:", ["Proprietário", "Prestador"])
         amn = st.text_input("Amenities (Quantidade):", placeholder="Ex: 2 sabonetes, 1 shampoo")
         gel = st.radio("Protocolo Geladeira:", ["Esvaziar e limpar", "Manter itens lacrados"])
