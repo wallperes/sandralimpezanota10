@@ -5,13 +5,13 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps
 import io
 import textwrap
 import base64
-import requests # NOVO: Biblioteca para buscar o CEP na internet
+import requests # Biblioteca para buscar o CEP na internet
 
 # --- CONFIGURAÇÕES DO AMBIENTE ---
 st.set_page_config(page_title="Gestão de Limpeza Automatizada", page_icon="✨", layout="centered")
 
 # --- INICIALIZAÇÃO DE VARIÁVEIS DE MEMÓRIA (SESSION STATE) ---
-# Isso garante que os campos de endereço não deem erro antes de serem preenchidos
+# Isso garante que os campos de endereço conectem com a busca do CEP
 if "rua_input" not in st.session_state: st.session_state.rua_input = ""
 if "bairro_input" not in st.session_state: st.session_state.bairro_input = ""
 if "cidade_uf_input" not in st.session_state: st.session_state.cidade_uf_input = ""
@@ -30,7 +30,7 @@ def buscar_cep():
                 st.session_state.bairro_input = data.get("bairro", "")
                 st.session_state.cidade_uf_input = f"{data.get('localidade', '')} / {data.get('uf', '')}"
         except:
-            pass # Se der erro de internet ou ViaCEP fora do ar, ignora silenciosamente
+            pass # Se der erro de internet, ignora silenciosamente
 
 # --- ESTILOS VISUAIS (O "BANHO DE LOJA" BLINDADO) ---
 st.markdown("""
@@ -41,7 +41,6 @@ st.markdown("""
         font-family: 'Inter', 'Helvetica Neue', sans-serif;
     }
     
-    /* 🔴 FORÇA O TEXTO ESCURO EM TODOS OS RÓTULOS, PERGUNTAS E PARÁGRAFOS */
     div[data-testid="stWidgetLabel"] p, 
     div[data-testid="stWidgetLabel"] span,
     .stMarkdown p,
@@ -50,18 +49,16 @@ st.markdown("""
         color: #2b2b2b !important;
     }
 
-    /* 🔴 CORREÇÃO: ABAS (TABS) SUPERIORES */
     button[data-baseweb="tab"] p, button[data-baseweb="tab"] span, button[data-baseweb="tab"] div {
-        color: #666666 !important; /* Cor da aba inativa */
+        color: #666666 !important;
     }
     button[data-baseweb="tab"][aria-selected="true"] p, 
     button[data-baseweb="tab"][aria-selected="true"] span, 
     button[data-baseweb="tab"][aria-selected="true"] div {
-        color: #188038 !important; /* Cor da aba ativa (Verde) */
+        color: #188038 !important; 
         font-weight: bold !important;
     }
 
-    /* 🔴 CORREÇÃO: MENUS DE SELEÇÃO E RADIO BUTTONS */
     div[role="radiogroup"] p, 
     div[role="radiogroup"] span, 
     div[role="radiogroup"] div,
@@ -69,7 +66,6 @@ st.markdown("""
         color: #2b2b2b !important;
     }
 
-    /* Customiza os formulários para parecerem 'Cartões' */
     [data-testid="stForm"] {
         background-color: #FFFFFF !important;
         border-radius: 20px;
@@ -78,7 +74,6 @@ st.markdown("""
         border: 1px solid #f0f0f0;
     }
 
-    /* Estiliza os botões principais */
     .stButton>button { 
         width: 100%; 
         border-radius: 12px; 
@@ -95,26 +90,23 @@ st.markdown("""
         transform: translateY(-2px);
         box-shadow: 0 6px 15px rgba(24, 128, 56, 0.3);
     }
-    /* Garante que o texto DENTRO do botão fique branco */
     .stButton>button p, .stButton>button span {
         color: #FFFFFF !important;
     }
 
-    /* Estiliza as caixas de texto (onde a pessoa digita) */
     .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stDateInput>div>div>input {
         border-radius: 10px !important;
         border: 1px solid #E0E0E0 !important;
         background-color: #FAFAFA !important;
         padding: 12px !important;
         font-size: 15px !important;
-        color: #2b2b2b !important; /* Cor do texto digitado */
+        color: #2b2b2b !important; 
     }
     .stTextInput>div>div>input:focus, .stTextArea>div>div>textarea:focus {
         border-color: #34A853 !important;
         box-shadow: 0 0 0 2px rgba(52, 168, 83, 0.2) !important;
     }
 
-    /* Estiliza o fundo das Abas */
     [data-baseweb="tab-list"] {
         background-color: #ffffff;
         border-radius: 12px;
@@ -289,15 +281,18 @@ tab_imovel, tab_rotina = st.tabs(["🏢 Ficha do Imóvel", "📅 Solicitação d
 with tab_imovel:
     st.info("Olá! Para eu deixar tudo impecável e seguir exatamente o seu padrão de qualidade (e não te incomodar com perguntas bem na hora da limpeza), preparei este checklist rápido. Respondendo isso uma única vez, eu salvo no meu sistema e sigo sempre o seu jeito! Quando puder, me confirma? 🥰✨")
     
+    # --- O CAMPO DE CEP AGORA FICA AQUI FORA PARA PODER RODAR A FUNÇÃO ---
+    st.markdown("### 🔎 Busca Rápida de Endereço")
+    st.markdown("<div style='background-color: #E8F5E9; padding: 15px; border-radius: 10px; margin-bottom: 15px;'><span style='color: #188038; font-weight: bold;'>💡 Dica de Ouro:</span> Se você souber o CEP, digite apenas os números abaixo e <strong>pressione Enter no teclado</strong>. O endereço será preenchido automaticamente na ficha abaixo!</div>", unsafe_allow_html=True)
+    
+    i_cep = st.text_input("Digite o CEP e aperte Enter:", key="cep_input", on_change=buscar_cep)
+    
+    # --- AQUI COMEÇA O FORMULÁRIO ONDE AS COISAS SÃO PREENCHIDAS ---
     with st.form("form_imovel"):
         st.markdown("### 📍 1. Identificação do Imóvel")
         i_prop = st.text_input("Para começar, qual o nome do proprietário ou responsável por esse imóvel? 👤")
         
-        # --- NOVO BLOCO DE ENDEREÇO COM BUSCA DE CEP ---
-        st.markdown("<div style='background-color: #E8F5E9; padding: 15px; border-radius: 10px; margin-bottom: 15px;'><span style='color: #188038; font-weight: bold;'>💡 Dica de Ouro:</span> Se você souber o CEP, digite apenas os números (sem traços) abaixo e os dados do endereço serão preenchidos automaticamente! Se não souber, pode deixar em branco e preencher o resto manualmente.</div>", unsafe_allow_html=True)
-        
-        i_cep = st.text_input("CEP (Apenas números)", key="cep_input", on_change=buscar_cep)
-        
+        # Os campos "key" abaixo servem para o formulário puxar a memória do CEP
         i_rua = st.text_input("Logradouro (Rua, Avenida, etc.)", key="rua_input")
         
         col_end1, col_end2 = st.columns(2)
@@ -312,7 +307,6 @@ with tab_imovel:
             i_num = st.text_input("Número 🔢")
         with col_end4:
             i_comp = st.text_input("Complemento (Casa, Apto, Bloco...)")
-        # -----------------------------------------------
 
         i_cond = st.text_input("Qual é o nome do Edifício ou Condomínio? 🏢 (Ex: Rio Wonder)")
         i_apto = st.text_input("Qual é a Torre ou Bloco, e o número do apartamento? 🏗️🚪")
