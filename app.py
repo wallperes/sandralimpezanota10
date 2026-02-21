@@ -509,3 +509,116 @@ with tab_imovel:
                 ("🚿 BANHEIROS E AMENITIES", [
                     ("Para o sabonete, shampoo e condicionador: você oferece? Quais oferece e onde ficam os itens de reposição? 🧴", i_shampoo),
                     ("Onde você prefere que eu deixe as toalhas limpas? (Em cima da cama, no rack do banheiro...)", i_toalhas)
+                ]),
+                ("🍽️ COZINHA E GELADEIRA", [
+                    ("Se tiver sobrado comida ou bebida dos hóspedes anteriores na geladeira, o que eu faço? Jogo tudo fora ou mantenho o que estiver fechado/lacrado? 🧊", i_geladeira),
+                    ("E se deixarem louça suja na pia: eu lavo ou você prefere anotar para cobrar uma taxa extra deles?", i_louca),
+                    ("Para a gente manter o controle: você deixa um número exato de pratos, copos e talheres? Se sim, me passa as quantidades:", i_quantitativos),
+                    ("Tem mais algum detalhe na cozinha que eu deva deixar para os hóspedes (sal, açucar) ou algo que queira me contar?", i_cozinha),
+                    ("Quais eletrodomésticos e equipamentos ficam disponíveis na cozinha para os hóspedes?", str_eletros)
+                ]),
+                ("✨ FINALIZAÇÃO E DETALHES", [
+                    ("Se houver mimos de boas vindas, onde ficam guardados? 🍬", i_mimos_guardados),
+                    ("Ao terminar e fechar a porta, como devo deixar o ambiente? (Ex: cortinas abertas ou fechadas, luzes acessas ou apagadas?) 🌬️", i_ambiente),
+                    ("Onde eu faço o descarte final de todo o lixo aí no prédio? 🗑️", i_lixo),
+                    ("Para fecharmos: deseja acrescentar alguma observação importante ou detalhe sobre o apartamento que ainda não conversamos por aqui? 📝", i_obs_finais)
+                ])
+            ]
+        }
+
+        img_fch = criar_imagem_profissional(payload_imovel, "imovel")
+        st.markdown("### Documento Gerado com Sucesso! 🎉")
+        st.image(img_fch, use_container_width=True)
+        
+        msg_fch = f"Ficha Técnica Atualizada: {i_prop}. Muito obrigada por preencher!"
+        injetar_botao_compartilhar(img_fch, msg_fch, f"Ficha_{i_prop}.png")
+
+# --- ABA 2: SOLICITAÇÃO DE LIMPEZA ---
+with tab_rotina:
+    st.markdown("### 🗓️ Visão Geral da Minha Agenda de Limpeza")
+    st.markdown("<p style='text-align: center; color: #555; font-size: 15px; margin-bottom: 10px; background-color: #E8F5E9; padding: 10px; border-radius: 8px;'>Para verificar outras semanas ou datas, clique nas setinhas para <strong>&lt; (esquerda)</strong> ou <strong>&gt; (direita)</strong> na parte superior do calendário.</p>", unsafe_allow_html=True)
+    
+    cal_url = "https://calendar.google.com/calendar/embed?src=sandramjo26%40gmail.com&mode=WEEK"
+    components.iframe(cal_url, height=650, scrolling=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    st.markdown("### 📝 Nova Solicitação de Limpeza")
+    st.write("Para solicitar um serviço de limpeza, preencha a ficha abaixo e me envie")
+    st.markdown("---")
+    
+    q_cadastro = st.radio("Me tira uma dúvida rápida: a gente já fez a Ficha Técnica desse seu imóvel antes, ou é a nossa primeira vez lá? 📝", ["Já fizemos a Ficha", "Primeira vez"])
+    q_ident = st.text_input("Ah, maravilha! Então me registre apenas qual para qual imóvel deseja a limpeza, me informando seu condomínio, torre e o número do apartamento 🏢🚪 (Ex: Torre Formosa, Apto 509)")
+    q_data = st.date_input("Qual é a data gostaria de reservar? 🗓️✅", date.today(), format="DD/MM/YYYY")
+    
+    st.write("")
+    st.markdown("### ⏰ Horários")
+    st.info("💡 **Aviso:** É desejável dispor de 3 horas para uma limpeza com o nosso padrão de qualidade, sem apuros de tempo e imprevistos. No entanto, é possível realizar o serviço em 2 horas caso seja necessário.")
+    
+    q_horario_label = "Qual o horário desejado para a limpeza? ⏰"
+    q_horario = st.text_input(f"{q_horario_label} (Ex: das 11h às 14h)")
+    
+    q_checkin_label = "Entrarão novos hóspedes no mesmo dia dessa solicitação de limpeza? 🚪"
+    q_checkin = st.radio(q_checkin_label, ["Sim, entram no mesmo dia", "Não, o apartamento ficará vazio"])
+    
+    q_horario_novos_hospedes = ""
+    if q_checkin == "Sim, entram no mesmo dia":
+        q_horario_novos_hospedes = st.text_input("Qual o horário previsto de entrada (check-in) dos novos hóspedes? 🕒 (Ex: 15:00)")
+    
+    st.write("")
+    st.markdown("### 🔑 Acesso")
+    q_acesso = st.text_area("Como vai ser a minha entrada no dia dessa limpeza? 🔑 (Chave na portaria, senha na porta, cofre...) e se for senha, qual a senha?")
+    
+    st.write("")
+    st.markdown("### 📋 Informações da Reserva")
+    q_hospedes = st.text_input("Quantas pessoas entram nessa reserva? 👥 (Pergunto só para eu ter uma ideia do que será necessário preparar)")
+    q_banho = st.text_input("Quantas toalhas de banho e de rosto eu devo separar no total? 🛁")
+    q_cama = st.text_input("Quantas camas eu preciso preparar dessa vez? E deixo quantos travesseiros e cobertores? Peço que me fale tudo sobre as roupas de cama, incluindo se devo usar cobre leitos, edredoms, etc 🛏️")
+    q_amenities = st.text_input("Quantos rolos de papel higiênico, sabonetes e shampoos eu devo deixar no total? 🧻🧴")
+    q_mimos = st.text_input("Tem algum 'mimo' especial para essa reserva (chocolates, biscoitos, cápsulas de café)? Quantos eu deixo preparados? 🍬")
+    q_notas = st.text_area("Para fecharmos a solicitação: deseja acrescentar alguma observação importante ou pedido especial para essa limpeza que ainda não conversamos? Pode me falar que dependendo do que for eu tento verificar! 😉✨")
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    btn_gen = st.button("🚀 Gerar Ordem de Serviço de Limpeza")
+    
+    if btn_gen:
+        dt_str = q_data.strftime("%d/%m/%Y")
+        
+        resposta_checkin_final = q_checkin
+        if q_checkin == "Sim, entram no mesmo dia" and q_horario_novos_hospedes:
+            resposta_checkin_final += f" (Horário previsto: {q_horario_novos_hospedes})"
+
+        payload = {
+            "data_limpeza": dt_str,
+            "categorias": [
+                ("📋 INFORMAÇÕES GERAIS E HORÁRIOS", [
+                    ("Me tira uma dúvida rápida: a gente já fez a Ficha Técnica desse seu imóvel antes, ou é a nossa primeira vez lá? 📝", q_cadastro),
+                    ("Ah, maravilha! Então me lembra só qual é a Torre e o número do apartamento para eu puxar o seu padrão de qualidade aqui? 🏢🚪", q_ident),
+                    ("Qual é a data gostaria de reservar? 🗓️✅", dt_str),
+                    (q_horario_label, q_horario),
+                    (q_checkin_label, resposta_checkin_final),
+                    ("Quantas pessoas entram nessa reserva? 👥", q_hospedes)
+                ]),
+                ("🔑 ACESSO E SEGURANÇA", [
+                    ("Como vai ser a minha entrada no dia dessa limpeza? 🔑", q_acesso)
+                ]),
+                ("🧺 ENXOVAL E PREPARAÇÃO", [
+                    ("Quantas toalhas de banho e de rosto eu devo separar no total? 🛁", q_banho),
+                    ("Quantas camas eu preciso preparar dessa vez? E deixo quantos travesseiros e cobertores? 🛏️", q_cama)
+                ]),
+                ("🧴 AMENITIES E MIMOS", [
+                    ("Quantos rolos de papel higiênico, sabonetes e shampoos eu devo deixar no total? 🧻🧴", q_amenities),
+                    ("Tem algum 'mimo' especial para essa reserva (chocolates, biscoitos, cápsulas de café)? Quantos eu deixo preparados? 🍬", q_mimos)
+                ]),
+                ("⚠️ NOTAS ESPECIAIS", [
+                    ("Deseja acrescentar alguma observação importante ou pedido especial para essa limpeza que ainda não conversamos?", q_notas)
+                ])
+            ]
+        }
+        
+        img_os = criar_imagem_profissional(payload, "rotina")
+        st.markdown("### Documento Gerado com Sucesso! 🎉")
+        st.image(img_os, use_container_width=True)
+        
+        msg_whatsapp = f"Olá! Segue a Ordem de Serviço confirmada para o dia {dt_str} no apto {q_ident}."
+        injetar_botao_compartilhar(img_os, msg_whatsapp, f"OS_{dt_str.replace('/','-')}.png")
