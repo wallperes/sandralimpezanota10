@@ -218,7 +218,8 @@ def criar_imagem_profissional(dados, tipo):
     linhas_titulo = quebrar_texto_por_pixels(titulo_texto, font_title, width - 90, draw)
     y_titulo = 30 + offset_y
     for linha in linhas_titulo:
-        draw.text((45, y_titulo), linha, font_title, fill="white")
+        # Adicionado o 'font=' antes de font_title
+        draw.text((45, y_titulo), linha, font=font_title, fill="white") 
         y_titulo += 40
         
     sub_linhas = quebrar_texto_por_pixels(subtitulo, font_text, width - 90, draw)
