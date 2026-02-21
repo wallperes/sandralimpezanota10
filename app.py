@@ -284,9 +284,9 @@ tab_imovel, tab_rotina = st.tabs(["🏢 Ficha do Imóvel", "📅 Solicitação d
 with tab_imovel:
     st.info("Olá! Para eu deixar tudo impecável e seguir exatamente o seu padrão de qualidade (e não te incomodar com perguntas bem na hora da limpeza), preparei este ficha de cadastro de imóvel. Sei que são várias perguntas, mas respondendo isso uma única vez, eu salvo no meu sistema e sigo sempre o seu jeito! Quando puder, me confirma? 🥰✨")
     
-    st.markdown("### 🔎 Cadastro do Imóvel - CEP")
+    st.markdown("### 🔎 Cadastro do Imóvel")
         
-    i_cep = st.text_input("Digite o CEP:", key="cep_input", on_change=buscar_cep)
+    i_cep = st.markdown("Digite o CEP:", key="cep_input", on_change=buscar_cep)
     st.markdown("<div style='background-color: #E8F5E9; padding: 15px; border-radius: 10px; margin-bottom: 15px;'><span style='color: #188038; font-weight: bold;'>💡 Dica de Ouro:</span> Caso não saiba o CEP, ignore esse campo. Porém, se você souber, digite apenas os números abaixo e <strong>pressione Enter ou clique fora da caixa</strong> para que o endereço seja preenchido automaticamente na ficha abaixo!</div>", unsafe_allow_html=True)
     
     with st.form("form_imovel"):
