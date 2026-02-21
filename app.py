@@ -7,30 +7,102 @@ import textwrap
 import base64
 
 # --- CONFIGURAÇÕES DO AMBIENTE ---
-st.set_page_config(page_title="Gestão de Limpeza Automatizada", page_icon="🧹", layout="centered")
+# Alteramos o layout para 'centered' mas com um visual mais moderno
+st.set_page_config(page_title="Gestão de Limpeza Automatizada", page_icon="✨", layout="centered")
 
-# --- ESTILOS VISUAIS ---
+# --- ESTILOS VISUAIS (O "BANHO DE LOJA") ---
 st.markdown("""
     <style>
-   .stButton>button { width: 100%; border-radius: 12px; height: 3.5em; font-weight: bold; background-color: #f0f2f6; transition: 0.3s; }
-   .stButton>button:hover { background-color: #e0e2e6; border-color: #2e7d32; }
-   .share-container { border: 1px solid #e6e9ef; padding: 20px; border-radius: 15px; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    /* Força um fundo claro e amigável na tela inteira */
+    .stApp {
+        background-color: #F4F7F6;
+        color: #2b2b2b;
+        font-family: 'Inter', 'Helvetica Neue', sans-serif;
+    }
+    
+    /* Customiza os formulários para parecerem 'Cartões' (Cards) modernos */
+    [data-testid="stForm"] {
+        background-color: #FFFFFF;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+        border: 1px solid #f0f0f0;
+    }
+
+    /* Estiliza os botões principais */
+    .stButton>button { 
+        width: 100%; 
+        border-radius: 12px; 
+        height: 3.5em; 
+        font-weight: bold; 
+        font-size: 16px;
+        color: white;
+        background: linear-gradient(135deg, #34A853 0%, #188038 100%);
+        border: none;
+        box-shadow: 0 4px 10px rgba(24, 128, 56, 0.2);
+        transition: all 0.3s ease; 
+    }
+    .stButton>button:hover { 
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(24, 128, 56, 0.3);
+        color: white;
+    }
+
+    /* Estiliza as caixas de texto e inputs para ficarem mais fofos e modernos */
+    .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stDateInput>div>div>input {
+        border-radius: 10px !important;
+        border: 1px solid #E0E0E0 !important;
+        background-color: #FAFAFA !important;
+        padding: 12px !important;
+        font-size: 15px !important;
+        color: #333 !important;
+    }
+    .stTextInput>div>div>input:focus, .stTextArea>div>div>textarea:focus {
+        border-color: #34A853 !important;
+        box-shadow: 0 0 0 2px rgba(52, 168, 83, 0.2) !important;
+    }
+
+    /* Melhora os cabeçalhos e textos */
+    h1, h2, h3 {
+        color: #1a1a1a;
+        font-weight: 700;
+    }
+    .stMarkdown p {
+        color: #4a4a4a;
+        font-size: 15px;
+    }
+
+    /* Estiliza as Abas (Tabs) */
+    [data-baseweb="tab-list"] {
+        background-color: #ffffff;
+        border-radius: 12px;
+        padding: 5px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        gap: 10px;
+    }
+    [data-baseweb="tab"] {
+        border-radius: 8px !important;
+        padding: 10px 20px !important;
+        background-color: transparent !important;
+    }
+    [data-baseweb="tab"][aria-selected="true"] {
+        background-color: #E8F5E9 !important;
+        color: #188038 !important;
+        font-weight: bold;
+    }
     </style>
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# FUNÇÃO: GERAÇÃO TÉCNICA DE IMAGEM (COM MARCA D'ÁGUA E ALERTA)
+# FUNÇÃO: GERAÇÃO TÉCNICA DE IMAGEM (MANTIDA INTACTA)
 # ==============================================================================
 def criar_imagem_profissional(dados, tipo):
-    # Altura dinâmica para acomodar todas as novas perguntas detalhadas
     width = 850
     height = 2800 if tipo == "imovel" else 1500
     
-    # Criamos a imagem base em RGBA para permitir transparências
     image = Image.new("RGBA", (width, height), "white")
     draw = ImageDraw.Draw(image)
 
-    # --- CARREGAMENTO DE FONTES ---
     try:
         font_alert = ImageFont.truetype("DejaVuSans-Bold.ttf", 22)
         font_watermark = ImageFont.truetype("DejaVuSans-Bold.ttf", 55)
@@ -40,9 +112,8 @@ def criar_imagem_profissional(dados, tipo):
     except:
         font_alert = font_watermark = font_title = font_header = font_text = ImageFont.load_default()
 
-    # --- 1. FAIXA DE ALERTA SUPERIOR ---
     altura_alerta = 50
-    draw.rectangle([(0, 0), (width, altura_alerta)], fill="#d32f2f") # Faixa vermelha
+    draw.rectangle([(0, 0), (width, altura_alerta)], fill="#d32f2f")
     texto_alerta = "🚨 DOCUMENTO VÁLIDO APENAS SE ENVIADO PARA SANDRA: (21) 96929-3505"
     
     try:
@@ -54,22 +125,19 @@ def criar_imagem_profissional(dados, tipo):
     draw.text(((width - tw_alert) / 2, (altura_alerta - th_alert) / 2), texto_alerta, font=font_alert, fill="white")
     offset_y = altura_alerta
 
-    # --- 2. CONTEÚDO PRINCIPAL ---
     if tipo == "imovel":
         cor_topo, titulo = "#01579b", "FICHA TÉCNICA DO IMÓVEL"
         subtitulo = f"Propriedade Identificada: {dados.get('nome_prop', '-')}"
     else:
-        cor_topo, titulo = "#1b5e20", "ORDEM DE SERVIÇO OPERACIONAL"
+        cor_topo, titulo = "#188038", "ORDEM DE SERVIÇO OPERACIONAL"
         subtitulo = f"Cronograma: {dados.get('data_limpeza', '-')}"
 
-    # Cabeçalho Principal
     draw.rectangle([(0, offset_y), (width, 160 + offset_y)], fill=cor_topo)
     draw.text((45, 45 + offset_y), titulo, font=font_title, fill="white")
     draw.text((45, 105 + offset_y), subtitulo, font=font_text, fill="#e1f5fe")
 
     y_pos, margin = 200 + offset_y, 45
 
-    # Renderização dinâmica baseada no tipo
     for categoria, campos in dados.get("categorias", []):
         draw.text((margin, y_pos), categoria, font=font_header, fill=cor_topo)
         y_pos += 40
@@ -86,7 +154,6 @@ def criar_imagem_profissional(dados, tipo):
 
     draw.text((margin, height-60), "Documento Gerado por Ecossistema Digital de Limpeza", font=font_text, fill="#bdbdbd")
 
-    # --- 3. MARCA D'ÁGUA DIAGONAL ---
     texto_wm = "ENVIAR PARA SANDRA\n(21) 96929-3505"
     watermark_img = Image.new('RGBA', (width, height), (255, 255, 255, 0))
     draw_wm = ImageDraw.Draw(watermark_img)
@@ -103,14 +170,12 @@ def criar_imagem_profissional(dados, tipo):
     
     rotacionada = watermark_img.rotate(30, resample=Image.BICUBIC)
     image = Image.alpha_composite(image, rotacionada)
-
-    # Corta o espaço em branco excedente no final da imagem
     image = image.crop((0, 0, width, min(y_pos + 100, height)))
     
     return image.convert("RGB")
 
 # ==============================================================================
-# FUNÇÃO: COMPONENTE DE COMPARTILHAMENTO NATIVO (WEB SHARE API)
+# FUNÇÃO: COMPARTILHAMENTO
 # ==============================================================================
 def injetar_botao_compartilhar(img, texto_corpo, nome_arquivo="ordem_servico.png"):
     buffered = io.BytesIO()
@@ -118,27 +183,27 @@ def injetar_botao_compartilhar(img, texto_corpo, nome_arquivo="ordem_servico.png
     b64_data = base64.b64encode(buffered.getvalue()).decode()
     
     js_interface = f"""
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; font-family: sans-serif; margin-top: 20px;">
-        <div style="background-color: #fff3cd; color: #856404; padding: 10px; border-radius: 8px; font-size: 14px; border: 1px solid #ffeeba; width: 100%; text-align: center;">
-           ⚠️ Lembre-se de enviar para <strong>Sandra: (21) 96929-3505</strong>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; font-family: 'Inter', sans-serif; margin-top: 20px;">
+        <div style="background-color: #FFF8E1; color: #F57F17; padding: 12px; border-radius: 10px; font-size: 14px; border: 1px solid #FFECB3; width: 100%; text-align: center; font-weight: 500;">
+           ✨ Lembre-se de enviar para <strong>Sandra: (21) 96929-3505</strong>
         </div>
         <button id="btnShare" style="
-            background-color: #25D366; color: white; border: none; padding: 14px 28px; 
-            border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; 
-            font-size: 17px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: 0.2s;">
-            <span style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%); color: white; border: none; padding: 16px 28px; 
+            border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; 
+            font-size: 17px; box-shadow: 0 4px 12px rgba(37,211,102,0.3); transition: 0.2s;">
+            <span style="display: flex; align-items: center; justify-content: center; gap: 10px;">
                 <svg width="22" height="22" fill="white" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0.16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.72.937 3.659 1.432 5.63 1.433h.005c6.554 0 11.89-5.335 11.893-11.892a11.826 11.826 0 00-3.483-8.417"/></svg>
-                Compartilhar Documento (Anexar)
+                Enviar Documento pelo WhatsApp
             </span>
         </button>
-        <span id="txtStatus" style="font-size: 11px; color: #888;"></span>
+        <span id="txtStatus" style="font-size: 12px; color: #888; margin-top: 5px;"></span>
     </div>
 
     <script>
     async function dispararCompartilhamento() {{
         const b64 = "{b64_data}";
         const status = document.getElementById("txtStatus");
-        status.innerText = "Preparando arquivo...";
+        status.innerText = "Preparando arquivo para a Sandra...";
         
         try {{
             const res = await fetch("data:image/png;base64," + b64);
@@ -153,9 +218,9 @@ def injetar_botao_compartilhar(img, texto_corpo, nome_arquivo="ordem_servico.png
 
             if (navigator.canShare && navigator.canShare(shareData)) {{
                 await navigator.share(shareData);
-                status.innerText = "Compartilhamento iniciado. Selecione o contato de Sandra.";
+                status.innerText = "Tudo pronto! Selecione o contato da Sandra.";
             }} else {{
-                status.innerText = "Seu navegador não suporta o compartilhamento direto de arquivos.";
+                status.innerText = "Ops! Seu navegador não suporta enviar a imagem direto.";
             }}
         }} catch (e) {{
             status.innerText = "Erro no compartilhamento: " + e.message;
@@ -165,25 +230,29 @@ def injetar_botao_compartilhar(img, texto_corpo, nome_arquivo="ordem_servico.png
     document.getElementById("btnShare").onclick = dispararCompartilhamento;
     </script>
     """
-    components.html(js_interface, height=130)
+    components.html(js_interface, height=140)
 
 # ==============================================================================
 # INTERFACE DO USUÁRIO
 # ==============================================================================
-st.title("🧹 Gestão de Limpeza")
+# Adicionamos um cabeçalho mais simpático
+st.markdown("<h1 style='text-align: center; color: #188038; margin-bottom: 5px;'>✨ App da Sandra</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #666; font-size: 16px; margin-bottom: 30px;'>Organização e qualidade para deixar tudo impecável!</p>", unsafe_allow_html=True)
 
 tab_rotina, tab_imovel = st.tabs(["📅 Rotina Operacional", "🏢 Ficha do Imóvel"])
 
 # --- ABA 1: ROTINA OPERACIONAL ---
 with tab_rotina:
-    st.subheader("Visão Geral da Agenda")
+    st.markdown("### 🗓️ Visão Geral da Agenda")
     cal_url = "https://calendar.google.com/calendar/embed?src=sandramjo26%40gmail.com&mode=AGENDA"
-    components.iframe(cal_url, height=400, scrolling=True)
+    components.iframe(cal_url, height=350, scrolling=True)
 
-    st.markdown("---")
-    st.subheader("Nova Ordem de Serviço")
+    st.markdown("<br>", unsafe_allow_html=True)
+    
     with st.form("form_rotina"):
+        st.markdown("### 📝 Nova Ordem de Serviço")
         st.write("Esta aba é para o dia a dia, soando como uma confirmação rápida e amigável.")
+        st.markdown("---")
         
         q_cadastro = st.radio("Me tira uma dúvida rápida: a gente já fez a Ficha Técnica desse seu imóvel antes, ou é a nossa primeira vez lá? 📝", ["Já fizemos a Ficha", "Primeira vez"])
         q_ident = st.text_input("Ah, maravilha! Então me lembra só qual é a Torre e o número do apartamento para eu puxar o seu padrão de qualidade aqui? 🏢🚪 (Ex: Torre Formosa, Apto 509)")
@@ -195,6 +264,7 @@ with tab_rotina:
         q_mimos = st.text_input("Tem algum 'mimo' especial para essa reserva (bombom, cápsulas de café, bilhetinho)? Quantos eu deixo preparados? 🍬")
         q_notas = st.text_area("Tem algum detalhe especial ou pedido diferente para essa limpeza de hoje? (Ex: 'Sandra, o moço do ar-condicionado vai lá às 14h'). Pode me falar que eu cuido! 😉✨")
         
+        st.markdown("<br>", unsafe_allow_html=True)
         btn_gen = st.form_submit_button("🚀 Gerar Ordem com Segurança")
     
     if btn_gen:
@@ -223,6 +293,7 @@ with tab_rotina:
         }
         
         img_os = criar_imagem_profissional(payload, "rotina")
+        st.markdown("### Documento Gerado com Sucesso! 🎉")
         st.image(img_os, use_container_width=True)
         
         msg_whatsapp = f"Olá! Segue a Ordem de Serviço confirmada para o dia {dt_str} no apto {q_ident}."
@@ -230,48 +301,48 @@ with tab_rotina:
 
 # --- ABA 2: FICHA DO IMÓVEL ---
 with tab_imovel:
-    st.subheader("Ficha do Imóvel (O Padrão Fixo de Qualidade)")
     st.info("Olá! Para eu deixar tudo impecável e seguir exatamente o seu padrão de qualidade (e não te incomodar com perguntas bem na hora da limpeza), preparei este checklist rápido. Respondendo isso uma única vez, eu salvo no meu sistema e sigo sempre o seu jeito! Quando puder, me confirma? 🥰✨")
     
     with st.form("form_imovel"):
-        st.markdown("### 📍 1. IDENTIFICAÇÃO DO IMÓVEL")
+        st.markdown("### 📍 1. Identificação do Imóvel")
         i_prop = st.text_input("Para começar, qual o nome do proprietário ou responsável por esse imóvel? 👤")
         i_end = st.text_input("Qual é o endereço completo do imóvel? (Rua, número, bairro e CEP, se souber) 📍")
         i_cond = st.text_input("Qual é o nome do Edifício ou Condomínio? 🏢 (Ex: Rio Wonder)")
         i_apto = st.text_input("E para eu achar rapidinho: qual é a Torre ou Bloco, e o número do apartamento? 🏗️🚪")
         
-        st.markdown("### 🔑 2. ACESSO E SEGURANÇA")
+        st.markdown("<br>### 🔑 2. Acesso e Segurança", unsafe_allow_html=True)
         i_acesso = st.text_area("Como vai ser a minha entrada no dia da limpeza? 🔑 (Chave na portaria, senha na porta, cofre...)")
         i_senhas = st.text_input("Quais são as senhas que vou precisar? (Da portaria, da porta principal...)")
         i_cofre = st.text_input("Se a gente for usar um cofre de chaves (lockbox), qual é a senha e onde ele costuma ficar escondidinho? 🤫")
         i_emerg = st.text_input("Sabe como é, né? Se a bateria da fechadura eletrônica acabar, tem alguma chave física de emergência? Onde ela fica? 😅")
         i_alarme = st.text_input("O imóvel tem alarme? Se sim, me passa o código para eu desativar assim que entrar? 🚨")
         
-        st.markdown("### 🧹 3. EQUIPAMENTOS E MATERIAIS")
+        st.markdown("<br>### 🧹 3. Equipamentos e Materiais", unsafe_allow_html=True)
         i_aspirador = st.text_input("Aí no apartamento tem um aspirador de pó funcionando direitinho? Ah, e a voltagem das tomadas é 110v ou 220v? 🔌")
         i_materiais = st.text_input("Posso contar com vassoura, rodo, balde, panos e escadinha aí no apto, ou é melhor eu levar os meus?")
         i_produtos = st.text_input("Sobre os produtos de limpeza: você costuma fornecer tudo (detergente, desinfetante) ou prefere que eu leve o meu kit?")
         i_proibido = st.text_input("Isso é muito importante: tem algum produto que é PROIBIDO usar no piso ou nas bancadas para não manchar de jeito nenhum? 🚫")
         
-        st.markdown("### 🛏️ 4. QUARTOS E ROUPA DE CAMA")
+        st.markdown("<br>### 🛏️ 4. Quartos e Roupa de Cama", unsafe_allow_html=True)
         i_guardar = st.text_input("Onde você costuma guardar as roupas de cama e banho limpas? 🧺")
         i_suja = st.text_input("O que eu faço com a roupa suja que os hóspedes usaram? (Lavo na máquina do apto, deixo no cesto, coloco em sacola pra lavanderia?)")
         i_montar = st.text_input("Como você prefere que eu monte as camas? Aquele padrão de hotel (bem esticadinho com a peseira) ou mais simples (só as roupas dobradas em cima)?")
         
-        st.markdown("### 🚿 5. BANHEIROS E AMENITIES")
+        st.markdown("<br>### 🚿 5. Banheiros e Amenities", unsafe_allow_html=True)
         i_shampoo = st.text_input("Para o sabonete e shampoo: você prefere que eu reabasteça aqueles frascos grandes ou que eu coloque miniaturas novas a cada check-in? 🧴")
         i_toalhas = st.text_input("Onde você prefere que eu arrume as toalhas limpas? (Em cima da cama, no rack do banheiro...)")
         
-        st.markdown("### 🍽️ 6. COZINHA E GELADEIRA")
+        st.markdown("<br>### 🍽️ 6. Cozinha e Geladeira", unsafe_allow_html=True)
         i_geladeira = st.text_input("Se tiver sobrado comida ou bebida dos hóspedes anteriores na geladeira, o que eu faço? Jogo tudo fora ou mantenho o que estiver fechado/lacrado? 🧊")
         i_louca = st.text_input("E se deixarem louça suja na pia: eu lavo (e já está incluso no meu serviço) ou você prefere anotar para cobrar uma taxa extra deles?")
         i_cozinha = st.text_input("Tem mais algum detalhe na cozinha que você gosta que eu fique de olho? (Ex: limpar o filtro da cafeteira, dar uma geral dentro do forno...)")
         
-        st.markdown("### ✨ 7. FINALIZAÇÃO E DETALHES")
+        st.markdown("<br>### ✨ 7. Finalização e Detalhes", unsafe_allow_html=True)
         i_mimos_guardados = st.text_input("Onde ficam guardados os mimos de boas-vindas? (Para eu saber de onde pegar no dia da limpeza) 🍬")
         i_ambiente = st.text_input("Ao terminar e fechar a porta, como devo deixar o ambiente? (Ex: ar-condicionado ligado no 24ºC pra não dar mofo, cortinas abertas ou fechadas?) 🌬️")
         i_lixo = st.text_input("Onde eu faço o descarte final de todo o lixo aí no prédio? 🗑️")
         
+        st.markdown("<br>", unsafe_allow_html=True)
         btn_imovel = st.form_submit_button("💾 Gerar Ficha Protegida")
         
     if btn_imovel:
@@ -320,6 +391,7 @@ with tab_imovel:
         }
 
         img_fch = criar_imagem_profissional(payload_imovel, "imovel")
+        st.markdown("### Documento Gerado com Sucesso! 🎉")
         st.image(img_fch, use_container_width=True)
         
         msg_fch = f"Ficha Técnica Atualizada: {i_prop}. Muito obrigada por preencher!"
