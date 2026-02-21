@@ -384,7 +384,7 @@ st.markdown("""
         Muito prazer em receber você aqui. Com a minha experiência no cuidado e limpeza de imóveis de temporada, aprendi que a higienização impecável é o coração de uma avaliação 5 estrelas. Trato cada espaço com o máximo de carinho, como se fosse a minha própria casa, pensando sempre no conforto e no encantamento do seu hóspede.
         </p>
         <p style='color: #424242; font-size: 16px; line-height: 1.6; margin-bottom: 0;'>
-        Criei esta ficha justamente para profissionalizar o nosso alinhamento. Sei que são várias perguntas mas com essas respostas registro todos os detalhes essenciais do seu imóvel no meu sistema e sigo exatamente o seu padrão de qualidade. Quando puder, preencha com calma. Vai ser um prazer cuidar do seu espaço! 🥰
+        Criei esta ficha justamente para profissionalizar o nosso alinhamento. Sei que são várias perguntas mas com os seus detalhes e as suas respostas, eu consigo registrar todos os detalhes essenciais do seu imóvel no meu sistema e sigo exatamente o seu padrão de qualidade. Quando puder, preencha com calma. Vai ser um prazer cuidar do seu espaço! 🥰
         </p>
     </div>
     """, unsafe_allow_html=True)
