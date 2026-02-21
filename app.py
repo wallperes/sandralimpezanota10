@@ -17,11 +17,14 @@ if "cidade_uf_input" not in st.session_state: st.session_state.cidade_uf_input =
 
 # --- FUNÇÃO DE BUSCA DO CEP ---
 def buscar_cep():
+    # Pega o que foi digitado e limpa traços, pontos e ESPAÇOS
     cep_bruto = st.session_state.cep_input
     cep_limpo = cep_bruto.replace("-", "").replace(".", "").replace(" ", "").strip()
     
+    # Atualiza a caixinha na tela para mostrar o CEP limpo
     st.session_state.cep_input = cep_limpo
     
+    # Valida se sobraram exatamente 8 números (Padrão de CEP Brasileiro)
     if len(cep_limpo) == 8 and cep_limpo.isdigit():
         try:
             response = requests.get(f"https://viacep.com.br/ws/{cep_limpo}/json/", timeout=5)
@@ -36,23 +39,92 @@ def buscar_cep():
 # --- ESTILOS VISUAIS ---
 st.markdown("""
     <style>
-    .stApp { background-color: #F4F7F6; font-family: 'Inter', 'Helvetica Neue', sans-serif; }
-    div[data-testid="stWidgetLabel"] p, div[data-testid="stWidgetLabel"] span,
-    .stMarkdown p, .stText, h1, h2, h3, label { color: #2b2b2b !important; }
-    button[data-baseweb="tab"] p, button[data-baseweb="tab"] span, button[data-baseweb="tab"] div { color: #666666 !important; }
-    button[data-baseweb="tab"][aria-selected="true"] p, button[data-baseweb="tab"][aria-selected="true"] span, 
-    button[data-baseweb="tab"][aria-selected="true"] div { color: #188038 !important; font-weight: bold !important; }
-    div[role="radiogroup"] p, div[role="radiogroup"] span, div[role="radiogroup"] div,
-    label[data-baseweb="radio"] div { color: #2b2b2b !important; }
-    [data-testid="stForm"] { background-color: #FFFFFF !important; border-radius: 20px; padding: 30px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04); border: 1px solid #f0f0f0; }
-    .stButton>button { width: 100%; border-radius: 12px; height: 3.5em; font-weight: bold; font-size: 16px; color: #FFFFFF !important; background: linear-gradient(135deg, #34A853 0%, #188038 100%); border: none; box-shadow: 0 4px 10px rgba(24, 128, 56, 0.2); transition: all 0.3s ease; }
-    .stButton>button:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(24, 128, 56, 0.3); }
-    .stButton>button p, .stButton>button span { color: #FFFFFF !important; }
-    .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stDateInput>div>div>input { border-radius: 10px !important; border: 1px solid #E0E0E0 !important; background-color: #FAFAFA !important; padding: 12px !important; font-size: 15px !important; color: #2b2b2b !important; }
-    .stTextInput>div>div>input:focus, .stTextArea>div>div>textarea:focus { border-color: #34A853 !important; box-shadow: 0 0 0 2px rgba(52, 168, 83, 0.2) !important; }
-    [data-baseweb="tab-list"] { background-color: #ffffff; border-radius: 12px; padding: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); gap: 10px; }
-    [data-baseweb="tab"] { border-radius: 8px !important; padding: 10px 20px !important; background-color: transparent !important; }
-    [data-baseweb="tab"][aria-selected="true"] { background-color: #E8F5E9 !important; }
+    .stApp {
+        background-color: #F4F7F6;
+        font-family: 'Inter', 'Helvetica Neue', sans-serif;
+    }
+    
+    div[data-testid="stWidgetLabel"] p, 
+    div[data-testid="stWidgetLabel"] span,
+    .stMarkdown p,
+    .stText,
+    h1, h2, h3, label {
+        color: #2b2b2b !important;
+    }
+
+    button[data-baseweb="tab"] p, button[data-baseweb="tab"] span, button[data-baseweb="tab"] div {
+        color: #666666 !important;
+    }
+    button[data-baseweb="tab"][aria-selected="true"] p, 
+    button[data-baseweb="tab"][aria-selected="true"] span, 
+    button[data-baseweb="tab"][aria-selected="true"] div {
+        color: #188038 !important; 
+        font-weight: bold !important;
+    }
+
+    div[role="radiogroup"] p, 
+    div[role="radiogroup"] span, 
+    div[role="radiogroup"] div,
+    label[data-baseweb="radio"] div {
+        color: #2b2b2b !important;
+    }
+
+    [data-testid="stForm"] {
+        background-color: #FFFFFF !important;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+        border: 1px solid #f0f0f0;
+    }
+
+    .stButton>button { 
+        width: 100%; 
+        border-radius: 12px; 
+        height: 3.5em; 
+        font-weight: bold; 
+        font-size: 16px;
+        color: #FFFFFF !important; 
+        background: linear-gradient(135deg, #34A853 0%, #188038 100%);
+        border: none;
+        box-shadow: 0 4px 10px rgba(24, 128, 56, 0.2);
+        transition: all 0.3s ease; 
+    }
+    .stButton>button:hover { 
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(24, 128, 56, 0.3);
+    }
+    .stButton>button p, .stButton>button span {
+        color: #FFFFFF !important;
+    }
+
+    .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stDateInput>div>div>input {
+        border-radius: 10px !important;
+        border: 1px solid #E0E0E0 !important;
+        background-color: #FAFAFA !important;
+        padding: 12px !important;
+        font-size: 15px !important;
+        color: #2b2b2b !important; 
+    }
+    .stTextInput>div>div>input:focus, .stTextArea>div>div>textarea:focus {
+        border-color: #34A853 !important;
+        box-shadow: 0 0 0 2px rgba(52, 168, 83, 0.2) !important;
+    }
+
+    [data-baseweb="tab-list"] {
+        background-color: #ffffff;
+        border-radius: 12px;
+        padding: 5px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        gap: 10px;
+    }
+    [data-baseweb="tab"] {
+        border-radius: 8px !important;
+        padding: 10px 20px !important;
+        background-color: transparent !important;
+    }
+    [data-baseweb="tab"][aria-selected="true"] {
+        background-color: #E8F5E9 !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -78,7 +150,6 @@ def quebrar_texto_por_pixels(texto, fonte, largura_maxima, draw):
             
             # Mede a largura real em pixels da tentativa
             try:
-                # Método seguro e moderno do Pillow
                 w = draw.textlength(linha_teste, font=fonte)
             except AttributeError:
                 try:
@@ -108,44 +179,63 @@ def criar_imagem_profissional(dados, tipo):
     draw = ImageDraw.Draw(image)
 
     try:
-        font_alert = ImageFont.truetype("DejaVuSans-Bold.ttf", 22)
+        font_alert = ImageFont.truetype("DejaVuSans-Bold.ttf", 20)
         font_watermark = ImageFont.truetype("DejaVuSans-Bold.ttf", 55)
-        font_title = ImageFont.truetype("DejaVuSans-Bold.ttf", 45)
-        font_header = ImageFont.truetype("DejaVuSans-Bold.ttf", 20) # Reduzido levemente para caber melhor as perguntas
+        font_title = ImageFont.truetype("DejaVuSans-Bold.ttf", 36) # Título reduzido de 45 para 36
+        font_header = ImageFont.truetype("DejaVuSans-Bold.ttf", 20) 
         font_text = ImageFont.truetype("DejaVuSans.ttf", 20)
     except:
         font_alert = font_watermark = font_title = font_header = font_text = ImageFont.load_default()
 
-    altura_alerta = 50
-    draw.rectangle([(0, 0), (width, altura_alerta)], fill="#d32f2f")
+    # --- 1. AJUSTE DA FAIXA VERMELHA (ALERTA) ---
     texto_alerta = "🚨 DOCUMENTO VÁLIDO APENAS SE ENVIADO PARA SANDRA: (21) 96929-3505"
+    linhas_alerta = quebrar_texto_por_pixels(texto_alerta, font_alert, width - 40, draw)
     
-    try:
-        bbox_alert = draw.textbbox((0, 0), texto_alerta, font=font_alert)
-        tw_alert, th_alert = bbox_alert[2], bbox_alert[3]
-    except AttributeError:
-        tw_alert, th_alert = draw.textsize(texto_alerta, font=font_alert)
+    # Altura dinâmica baseada na quantidade de linhas que o alerta ocupar
+    altura_alerta = max(50, len(linhas_alerta) * 30 + 20)
+    draw.rectangle([(0, 0), (width, altura_alerta)], fill="#d32f2f")
+    
+    y_alerta = 10
+    for linha in linhas_alerta:
+        try:
+            tw = draw.textlength(linha, font=font_alert)
+        except AttributeError:
+            try:
+                tw = draw.textbbox((0, 0), linha, font=font_alert)[2]
+            except AttributeError:
+                tw = draw.textsize(linha, font=font_alert)[0]
+                
+        draw.text(((width - tw) / 2, y_alerta), linha, font=font_alert, fill="white")
+        y_alerta += 25
         
-    draw.text(((width - tw_alert) / 2, (altura_alerta - th_alert) / 2), texto_alerta, font=font_alert, fill="white")
     offset_y = altura_alerta
 
+    # --- 2. AJUSTE DO CABEÇALHO E TÍTULO ---
     if tipo == "imovel":
-        cor_topo, titulo = "#01579b", "FICHA TÉCNICA DO IMÓVEL"
+        cor_topo, titulo_texto = "#01579b", "FICHA TÉCNICA DO IMÓVEL"
         subtitulo = f"Propriedade Identificada: {dados.get('nome_prop', '-')}"
     else:
-        cor_topo, titulo = "#188038", "ORDEM DE SERVIÇO OPERACIONAL"
+        cor_topo, titulo_texto = "#188038", "ORDEM DE SERVIÇO OPERACIONAL"
         subtitulo = f"Cronograma: {dados.get('data_limpeza', '-')}"
 
-    # O topo com título azul/verde também precisa tratar o tamanho do subtítulo (para não vazar)
+    # Fundo do cabeçalho
     draw.rectangle([(0, offset_y), (width, 160 + offset_y)], fill=cor_topo)
-    draw.text((45, 45 + offset_y), titulo, font=font_title, fill="white")
     
+    # Quebra do Título (protegido contra vazamentos)
+    linhas_titulo = quebrar_texto_por_pixels(titulo_texto, font_title, width - 90, draw)
+    y_titulo = 30 + offset_y
+    for linha in linhas_titulo:
+        draw.text((45, y_titulo), linha, font=font_title, fill="white")
+        y_titulo += 40
+        
+    # Quebra do Subtítulo (protegido)
     sub_linhas = quebrar_texto_por_pixels(subtitulo, font_text, width - 90, draw)
-    sub_y = 105 + offset_y
+    sub_y = y_titulo + 10
     for s_linha in sub_linhas:
         draw.text((45, sub_y), s_linha, font=font_text, fill="#e1f5fe")
         sub_y += 25
 
+    # --- 3. AJUSTE DO CORPO (PERGUNTAS E RESPOSTAS) ---
     y_pos, margin = 200 + offset_y, 45
     largura_maxima_texto = width - (margin * 2)
 
@@ -158,18 +248,18 @@ def criar_imagem_profissional(dados, tipo):
             if not val_str:
                 val_str = "Não informado"
                 
-            # 1. Escreve a Pergunta (Quebrada por Pixels)
-            linhas_pergunta = quebrar_texto_por_pixels(f"Pergunta: {pergunta}", font_header, largura_maxima_texto, draw)
+            # Escreve a Pergunta 
+            linhas_pergunta = quebrar_texto_por_pixels(str(pergunta), font_header, largura_maxima_texto, draw)
             for linha in linhas_pergunta:
                 draw.text((margin, y_pos), linha, font=font_header, fill="#424242")
-                y_pos += 25 # Espaçamento da pergunta
+                y_pos += 25 
                 
             y_pos += 5 # Respiro entre pergunta e resposta
             
-            # 2. Escreve a Resposta (Quebrada por Pixels)
-            linhas_resposta = quebrar_texto_por_pixels(f"👉 Resposta: {val_str}", font_text, largura_maxima_texto, draw)
+            # Escreve a Resposta (mantendo apenas a cor verde para destaque)
+            linhas_resposta = quebrar_texto_por_pixels(str(val_str), font_text, largura_maxima_texto, draw)
             for linha in linhas_resposta:
-                draw.text((margin, y_pos), linha, font=font_text, fill="#188038") # Cor destacada para a resposta
+                draw.text((margin, y_pos), linha, font=font_text, fill="#188038")
                 y_pos += 25
             
             y_pos += 25 # Espaçamento extra para o próximo campo
@@ -177,6 +267,7 @@ def criar_imagem_profissional(dados, tipo):
         draw.line([(margin, y_pos), (width-margin, y_pos)], fill="#eeeeee", width=2)
         y_pos += 25
 
+    # --- 4. RODAPÉ E MARCA D'ÁGUA ---
     draw.text((margin, y_pos + 20), "Documento Gerado por Ecossistema Digital de Limpeza", font=font_text, fill="#bdbdbd")
 
     texto_wm = "ENVIAR PARA SANDRA\n(21) 96929-3505"
@@ -196,7 +287,7 @@ def criar_imagem_profissional(dados, tipo):
     rotacionada = watermark_img.rotate(30, resample=Image.BICUBIC)
     image = Image.alpha_composite(image, rotacionada)
     
-    # Corta exatamente onde as respostas terminaram
+    # Corta a imagem onde o conteúdo efetivamente terminou
     image = image.crop((0, 0, width, y_pos + 80))
     
     return image.convert("RGB")
@@ -265,6 +356,7 @@ def injetar_botao_compartilhar(img, texto_corpo, nome_arquivo="ordem_servico.png
 st.markdown("<h1 style='text-align: center; color: #188038; margin-bottom: 5px;'>✨ App da Sandra</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #666; font-size: 16px; margin-bottom: 30px;'>Organização e qualidade para deixar tudo impecável!</p>", unsafe_allow_html=True)
 
+# Abas
 tab_imovel, tab_rotina = st.tabs(["🏢 Ficha do Imóvel", "📅 Solicitação de Limpeza"])
 
 # --- ABA 1: FICHA DO IMÓVEL ---
@@ -376,6 +468,7 @@ with tab_imovel:
         if i_bairro: endereco_final += f" - {i_bairro}"
         if i_cidade_uf: endereco_final += f", {i_cidade_uf}"
         
+        # O CEP formatado que será impresso na imagem final
         cep_display = st.session_state.cep_input
         if cep_display: endereco_final += f" (CEP: {cep_display})"
             
