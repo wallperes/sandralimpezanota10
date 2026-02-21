@@ -462,7 +462,7 @@ with tab_imovel:
         i_obs_finais = st.text_area("Para fecharmos: deseja acrescentar alguma observação importante ou detalhe sobre o apartamento que ainda não conversamos por aqui? 📝")
         
         st.markdown("<br>", unsafe_allow_html=True)
-        btn_imovel = st.form_submit_button("💾 Gerar Ficha Protegida")
+        btn_imovel = st.form_submit_button("💾 Gerar Ficha do Imóvel")
         
     if btn_imovel:
         lista_eletros_texto = []
