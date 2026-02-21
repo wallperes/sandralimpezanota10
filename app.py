@@ -267,28 +267,48 @@ def criar_imagem_profissional(dados, tipo):
         draw.line([(margin, y_pos), (width-margin, y_pos)], fill="#eeeeee", width=2)
         y_pos += 25
 
-    # --- 4. RODAPÉ E MARCA D'ÁGUA ---
+    # --- 4. RODAPÉ E MARCA D'ÁGUA REPETIDA ---
     draw.text((margin, y_pos + 20), "Documento Gerado por Ecossistema Digital de Limpeza", font=font_text, fill="#bdbdbd")
+    
+    # Altura final real do documento
+    final_height_needed = y_pos + 80
 
     texto_wm = "ENVIAR PARA SANDRA\n(21) 96929-3505"
-    watermark_img = Image.new('RGBA', (width, height), (255, 255, 255, 0))
-    draw_wm = ImageDraw.Draw(watermark_img)
+    
+    # Cria uma imagem transparente do tamanho total do canvas para desenhar as marcas
+    watermark_base = Image.new('RGBA', (width, height), (255, 255, 255, 0))
+    draw_wm = ImageDraw.Draw(watermark_base)
     
     try:
         bbox_wm = draw_wm.multiline_textbbox((0, 0), texto_wm, font=font_watermark, align='center')
-        wm_width = bbox_wm[2] - bbox_wm[0]
-        wm_height = bbox_wm[3] - bbox_wm[1]
+        wm_w = bbox_wm[2] - bbox_wm[0]
+        wm_h = bbox_wm[3] - bbox_wm[1]
     except AttributeError:
-        wm_width, wm_height = draw_wm.textsize(texto_wm, font=font_watermark)
+        wm_w, wm_h = draw_wm.textsize(texto_wm, font=font_watermark)
         
-    draw_wm.multiline_text(((width - wm_width) / 2, (height - wm_height) / 2), 
-                           texto_wm, font=font_watermark, fill=(150, 150, 150, 70), align='center')
+    # Loop para repetir a marca d'água verticalmente
+    y_curr = 300 # Começa um pouco abaixo do topo
+    spacing = 800 # Espaçamento entre cada repetição da marca
+
+    # Cor da marca d'água (cinza com transparência ajustada: 50)
+    wm_fill_color = (150, 150, 150, 50) 
+
+    while y_curr < final_height_needed:
+        # Centraliza horizontalmente
+        draw_x = (width - wm_w) / 2
+        # Posiciona verticalmente
+        draw_y = y_curr - (wm_h / 2)
+        draw_wm.multiline_text((draw_x, draw_y), texto_wm, font=font_watermark, fill=wm_fill_color, align='center')
+        y_curr += spacing
     
-    rotacionada = watermark_img.rotate(30, resample=Image.BICUBIC)
-    image = Image.alpha_composite(image, rotacionada)
+    # Rotaciona a camada inteira de marcas d'água
+    watermark_rotated = watermark_base.rotate(30, resample=Image.BICUBIC, expand=False)
+    
+    # Compoe sobre a imagem principal
+    image = Image.alpha_composite(image, watermark_rotated)
     
     # Corta a imagem onde o conteúdo efetivamente terminou
-    image = image.crop((0, 0, width, y_pos + 80))
+    image = image.crop((0, 0, width, final_height_needed))
     
     return image.convert("RGB")
 
@@ -400,7 +420,6 @@ with tab_imovel:
         i_cond = st.text_input("Qual é o nome do Edifício ou Condomínio? 🏢 (Ex: Rio Wonder)")
         i_prop = st.text_input("Qual o nome do proprietário ou responsável por esse imóvel? 👤")
         
-        # --- NOVA PERGUNTA DE CONFIGURAÇÃO DO IMÓVEL ---
         st.write("")
         i_configuracao = st.text_input("Como é a configuração do seu imóvel? Quantos quartos, banheiros e varandas ele possui? (Se for um Studio, basta escrever 'Studio') 🏠")
         
@@ -494,7 +513,7 @@ with tab_imovel:
                     ("Qual o nome do proprietário ou responsável por esse imóvel? 👤", i_prop),
                     ("Endereço Completo", endereco_final),
                     ("Qual é o nome do Edifício ou Condomínio? 🏢", i_cond),
-                    ("Configuração do Imóvel (Quartos, Banheiros, etc) 🏠", i_configuracao) # --- INCLUÍDO NO PDF AQUI ---
+                    ("Configuração do Imóvel (Quartos, Banheiros, etc) 🏠", i_configuracao)
                 ]),
                 ("🧹 EQUIPAMENTOS, CLIMATIZAÇÃO E MATERIAIS", [
                     ("Aí no apartamento tem um aspirador de pó funcionando direitinho? Ah, e a voltagem das tomadas é 110v ou 220v? 🔌", i_aspirador),
