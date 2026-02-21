@@ -7,36 +7,45 @@ import textwrap
 import base64
 
 # --- CONFIGURAÇÕES DO AMBIENTE ---
-# Alteramos o layout para 'centered' mas com um visual mais moderno
 st.set_page_config(page_title="Gestão de Limpeza Automatizada", page_icon="✨", layout="centered")
 
-# --- ESTILOS VISUAIS (O "BANHO DE LOJA") ---
+# --- ESTILOS VISUAIS (O "BANHO DE LOJA" CORRIGIDO) ---
 st.markdown("""
     <style>
-    /* Força um fundo claro e amigável na tela inteira */
+    /* Força um fundo claro na tela inteira */
     .stApp {
         background-color: #F4F7F6;
-        color: #2b2b2b;
         font-family: 'Inter', 'Helvetica Neue', sans-serif;
     }
     
-    /* Customiza os formulários para parecerem 'Cartões' (Cards) modernos */
+    /* 🔴 CORREÇÃO AQUI: Força TODOS os textos das perguntas a ficarem escuros! */
+    div[data-testid="stWidgetLabel"] p, 
+    div[data-testid="stWidgetLabel"] span,
+    div[data-baseweb="radio"] p,
+    div[data-baseweb="tab"] p,
+    .stMarkdown p,
+    .stText,
+    h1, h2, h3, label {
+        color: #2b2b2b !important;
+    }
+
+    /* Customiza os formulários para parecerem 'Cartões' */
     [data-testid="stForm"] {
-        background-color: #FFFFFF;
+        background-color: #FFFFFF !important;
         border-radius: 20px;
         padding: 30px;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
         border: 1px solid #f0f0f0;
     }
 
-    /* Estiliza os botões principais */
+    /* Estiliza os botões principais (A letra do botão continua branca!) */
     .stButton>button { 
         width: 100%; 
         border-radius: 12px; 
         height: 3.5em; 
         font-weight: bold; 
         font-size: 16px;
-        color: white;
+        color: #FFFFFF !important; 
         background: linear-gradient(135deg, #34A853 0%, #188038 100%);
         border: none;
         box-shadow: 0 4px 10px rgba(24, 128, 56, 0.2);
@@ -45,31 +54,24 @@ st.markdown("""
     .stButton>button:hover { 
         transform: translateY(-2px);
         box-shadow: 0 6px 15px rgba(24, 128, 56, 0.3);
-        color: white;
+    }
+    /* Garante que o texto DENTRO do botão fique branco */
+    .stButton>button p, .stButton>button span {
+        color: #FFFFFF !important;
     }
 
-    /* Estiliza as caixas de texto e inputs para ficarem mais fofos e modernos */
+    /* Estiliza as caixas de texto (onde a pessoa digita) */
     .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stDateInput>div>div>input {
         border-radius: 10px !important;
         border: 1px solid #E0E0E0 !important;
         background-color: #FAFAFA !important;
         padding: 12px !important;
         font-size: 15px !important;
-        color: #333 !important;
+        color: #2b2b2b !important; /* Cor do texto digitado */
     }
     .stTextInput>div>div>input:focus, .stTextArea>div>div>textarea:focus {
         border-color: #34A853 !important;
         box-shadow: 0 0 0 2px rgba(52, 168, 83, 0.2) !important;
-    }
-
-    /* Melhora os cabeçalhos e textos */
-    h1, h2, h3 {
-        color: #1a1a1a;
-        font-weight: 700;
-    }
-    .stMarkdown p {
-        color: #4a4a4a;
-        font-size: 15px;
     }
 
     /* Estiliza as Abas (Tabs) */
@@ -87,14 +89,16 @@ st.markdown("""
     }
     [data-baseweb="tab"][aria-selected="true"] {
         background-color: #E8F5E9 !important;
+    }
+    [data-baseweb="tab"][aria-selected="true"] p {
         color: #188038 !important;
-        font-weight: bold;
+        font-weight: bold !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# FUNÇÃO: GERAÇÃO TÉCNICA DE IMAGEM (MANTIDA INTACTA)
+# FUNÇÃO: GERAÇÃO TÉCNICA DE IMAGEM
 # ==============================================================================
 def criar_imagem_profissional(dados, tipo):
     width = 850
@@ -191,7 +195,7 @@ def injetar_botao_compartilhar(img, texto_corpo, nome_arquivo="ordem_servico.png
             background: linear-gradient(135deg, #25D366 0%, #128C7E 100%); color: white; border: none; padding: 16px 28px; 
             border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; 
             font-size: 17px; box-shadow: 0 4px 12px rgba(37,211,102,0.3); transition: 0.2s;">
-            <span style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <span style="display: flex; align-items: center; justify-content: center; gap: 10px; color: white;">
                 <svg width="22" height="22" fill="white" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0.16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.72.937 3.659 1.432 5.63 1.433h.005c6.554 0 11.89-5.335 11.893-11.892a11.826 11.826 0 00-3.483-8.417"/></svg>
                 Enviar Documento pelo WhatsApp
             </span>
@@ -235,7 +239,6 @@ def injetar_botao_compartilhar(img, texto_corpo, nome_arquivo="ordem_servico.png
 # ==============================================================================
 # INTERFACE DO USUÁRIO
 # ==============================================================================
-# Adicionamos um cabeçalho mais simpático
 st.markdown("<h1 style='text-align: center; color: #188038; margin-bottom: 5px;'>✨ App da Sandra</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #666; font-size: 16px; margin-bottom: 30px;'>Organização e qualidade para deixar tudo impecável!</p>", unsafe_allow_html=True)
 
