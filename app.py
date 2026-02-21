@@ -22,116 +22,96 @@ st.markdown("""
 # FUNÇÃO: GERAÇÃO TÉCNICA DE IMAGEM (COM MARCA D'ÁGUA E ALERTA)
 # ==============================================================================
 def criar_imagem_profissional(dados, tipo):
-    # Aumentamos um pouco a altura para acomodar a nova faixa de alerta no topo
-    width, height = 800, (1050 if tipo == "imovel" else 800)
+    # Altura dinâmica para acomodar todas as novas perguntas detalhadas
+    width = 850
+    height = 2800 if tipo == "imovel" else 1500
+    
     # Criamos a imagem base em RGBA para permitir transparências
     image = Image.new("RGBA", (width, height), "white")
     draw = ImageDraw.Draw(image)
 
     # --- CARREGAMENTO DE FONTES ---
     try:
-        # Tenta carregar fontes do sistema (comum em Linux/Servidores)
         font_alert = ImageFont.truetype("DejaVuSans-Bold.ttf", 22)
         font_watermark = ImageFont.truetype("DejaVuSans-Bold.ttf", 55)
         font_title = ImageFont.truetype("DejaVuSans-Bold.ttf", 45)
-        font_header = ImageFont.truetype("DejaVuSans-Bold.ttf", 26)
-        font_text = ImageFont.truetype("DejaVuSans.ttf", 24)
-        font_big = ImageFont.truetype("DejaVuSans-Bold.ttf", 55)
+        font_header = ImageFont.truetype("DejaVuSans-Bold.ttf", 22)
+        font_text = ImageFont.truetype("DejaVuSans.ttf", 20)
     except:
-        # Fallback para fonte padrão se não encontrar as acima
-        font_alert = font_watermark = font_title = font_header = font_text = font_big = ImageFont.load_default()
+        font_alert = font_watermark = font_title = font_header = font_text = ImageFont.load_default()
 
     # --- 1. FAIXA DE ALERTA SUPERIOR ---
     altura_alerta = 50
     draw.rectangle([(0, 0), (width, altura_alerta)], fill="#d32f2f") # Faixa vermelha
     texto_alerta = "🚨 DOCUMENTO VÁLIDO APENAS SE ENVIADO PARA SANDRA: (21) 96929-3505"
-    # Cálculo para centralizar o texto do alerta
-    bbox_alert = draw.textbbox((0, 0), texto_alerta, font=font_alert)
-    tw_alert, th_alert = bbox_alert[2], bbox_alert[3]
+    
+    try:
+        bbox_alert = draw.textbbox((0, 0), texto_alerta, font=font_alert)
+        tw_alert, th_alert = bbox_alert[2], bbox_alert[3]
+    except AttributeError:
+        tw_alert, th_alert = draw.textsize(texto_alerta, font=font_alert)
+        
     draw.text(((width - tw_alert) / 2, (altura_alerta - th_alert) / 2), texto_alerta, font=font_alert, fill="white")
-
-    # Define um offset (deslocamento) para tudo que vier abaixo da faixa de alerta
     offset_y = altura_alerta
 
     # --- 2. CONTEÚDO PRINCIPAL ---
-    # Definição de paleta cromática por contexto
     if tipo == "imovel":
         cor_topo, titulo = "#01579b", "FICHA TÉCNICA DO IMÓVEL"
-        subtitulo = f"Propriedade Identificada: {dados.get('Propriedade', '-')}"
+        subtitulo = f"Propriedade Identificada: {dados.get('nome_prop', '-')}"
     else:
         cor_topo, titulo = "#1b5e20", "ORDEM DE SERVIÇO OPERACIONAL"
-        subtitulo = f"Cronograma: {dados.get('Data', '-')}"
+        subtitulo = f"Cronograma: {dados.get('data_limpeza', '-')}"
 
-    # Cabeçalho Principal (Deslocado pelo offset_y)
+    # Cabeçalho Principal
     draw.rectangle([(0, offset_y), (width, 160 + offset_y)], fill=cor_topo)
     draw.text((45, 45 + offset_y), titulo, font=font_title, fill="white")
     draw.text((45, 105 + offset_y), subtitulo, font=font_text, fill="#e1f5fe")
 
-    y_pos, margin = 200 + offset_y, 50
+    y_pos, margin = 200 + offset_y, 45
 
-    if tipo == "imovel":
-        categorias = [
-            ("🛏️ QUARTO E ROUPARIA", ["Montagem", "Toalhas", "Roupa Suja"]),
-            ("🪣 PROTOCOLO OPERACIONAL", ["Produtos", "Amenities", "Geladeira", "Lixo"]),
-            ("🔑 LOGÍSTICA DE ACESSO", ["Entrada"])
-        ]
-        for cat_nome, campos in categorias:
-            draw.text((margin, y_pos), cat_nome, font=font_header, fill=cor_topo)
-            y_pos += 45
-            for campo in campos:
-                val = dados.get(campo, "-")
-                draw.text((margin, y_pos), f"{campo}:", font=font_header, fill="#424242")
-                y_pos += 35
-                for linha in textwrap.wrap(str(val), width=58):
-                    draw.text((margin, y_pos), linha, font=font_text, fill="#757575")
-                    y_pos += 30
-                y_pos += 15
-            draw.line([(margin, y_pos), (width-margin, y_pos)], fill="#eeeeee", width=2)
+    # Renderização dinâmica baseada no tipo
+    for categoria, campos in dados.get("categorias", []):
+        draw.text((margin, y_pos), categoria, font=font_header, fill=cor_topo)
+        y_pos += 40
+        for rotulo, valor in campos:
+            val_str = str(valor) if valor else "Não informado"
+            draw.text((margin, y_pos), f"{rotulo}:", font=font_header, fill="#424242")
             y_pos += 30
-    else:
-        # Layout para Rotina de Estadia
-        draw.rectangle([(margin, y_pos), (width-margin, y_pos+140)], fill="#f1f8e9", outline="#388e3c", width=2)
-        draw.text((margin+25, y_pos+25), "👥 VOLUME DE HÓSPEDES:", font=font_header, fill="#2e7d32")
-        draw.text((margin+25, y_pos+65), str(dados['Hóspedes']), font=font_big, fill="#212121")
-        y_pos += 180
-        draw.text((margin, y_pos), "⚠️ INSTRUÇÕES ESPECÍFICAS:", font=font_header, fill="#bf360c")
-        y_pos += 45
-        obs = dados.get('Obs', '') or "Seguir rigorosamente o padrão da Ficha do Imóvel."
-        for ln in textwrap.wrap(obs, width=52):
-            draw.text((margin, y_pos), ln, font=font_text, fill="#212121")
-            y_pos += 35
+            for linha in textwrap.wrap(val_str, width=80):
+                draw.text((margin, y_pos), linha, font=font_text, fill="#757575")
+                y_pos += 25
+            y_pos += 15
+        draw.line([(margin, y_pos), (width-margin, y_pos)], fill="#eeeeee", width=2)
+        y_pos += 25
 
     draw.text((margin, height-60), "Documento Gerado por Ecossistema Digital de Limpeza", font=font_text, fill="#bdbdbd")
 
     # --- 3. MARCA D'ÁGUA DIAGONAL ---
-    # Cria uma nova imagem transparente para a marca d'água
     texto_wm = "ENVIAR PARA SANDRA\n(21) 96929-3505"
     watermark_img = Image.new('RGBA', (width, height), (255, 255, 255, 0))
     draw_wm = ImageDraw.Draw(watermark_img)
     
-    # Calcula o tamanho do texto da marca d'água para centralizar
-    bbox_wm = draw_wm.multiline_textbbox((0, 0), texto_wm, font=font_watermark, align='center')
-    wm_width = bbox_wm[2] - bbox_wm[0]
-    wm_height = bbox_wm[3] - bbox_wm[1]
-    
-    # Desenha o texto no centro da imagem transparente
-    # Cor cinza claro (150,150,150) com transparência alpha (90 de 255)
+    try:
+        bbox_wm = draw_wm.multiline_textbbox((0, 0), texto_wm, font=font_watermark, align='center')
+        wm_width = bbox_wm[2] - bbox_wm[0]
+        wm_height = bbox_wm[3] - bbox_wm[1]
+    except AttributeError:
+        wm_width, wm_height = draw_wm.textsize(texto_wm, font=font_watermark)
+        
     draw_wm.multiline_text(((width - wm_width) / 2, (height - wm_height) / 2), 
-                           texto_wm, font=font_watermark, fill=(150, 150, 150, 90), align='center')
+                           texto_wm, font=font_watermark, fill=(150, 150, 150, 70), align='center')
     
-    # Rotaciona a imagem da marca d'água
     rotacionada = watermark_img.rotate(30, resample=Image.BICUBIC)
-    
-    # Combina a imagem original com a marca d'água rotacionada
     image = Image.alpha_composite(image, rotacionada)
 
-    # Converte de volta para RGB para salvar como PNG (remove o canal alpha final)
+    # Corta o espaço em branco excedente no final da imagem
+    image = image.crop((0, 0, width, min(y_pos + 100, height)))
+    
     return image.convert("RGB")
 
 # ==============================================================================
 # FUNÇÃO: COMPONENTE DE COMPARTILHAMENTO NATIVO (WEB SHARE API)
 # ==============================================================================
-# (Esta função foi revertida para a versão original que anexa imagem)
 def injetar_botao_compartilhar(img, texto_corpo, nome_arquivo="ordem_servico.png"):
     buffered = io.BytesIO()
     img.save(buffered, format="PNG")
@@ -192,9 +172,9 @@ def injetar_botao_compartilhar(img, texto_corpo, nome_arquivo="ordem_servico.png
 # ==============================================================================
 st.title("🧹 Gestão de Limpeza")
 
-# Menus Superiores usando Tabs (Mantido conforme pedido anterior)
 tab_rotina, tab_imovel = st.tabs(["📅 Rotina Operacional", "🏢 Ficha do Imóvel"])
 
+# --- ABA 1: ROTINA OPERACIONAL ---
 with tab_rotina:
     st.subheader("Visão Geral da Agenda")
     cal_url = "https://calendar.google.com/calendar/embed?src=sandramjo26%40gmail.com&mode=AGENDA"
@@ -203,47 +183,144 @@ with tab_rotina:
     st.markdown("---")
     st.subheader("Nova Ordem de Serviço")
     with st.form("form_rotina"):
-        c1, c2 = st.columns(2)
-        dt = c1.date_input("Data da Limpeza", date.today())
-        hs = c2.text_input("Quantidade de Hóspedes:")
-        ob = st.text_area("Notas Especiais (Ex: Manutenção de ar condicionado)")
+        st.write("Esta aba é para o dia a dia, soando como uma confirmação rápida e amigável.")
+        
+        q_cadastro = st.radio("Me tira uma dúvida rápida: a gente já fez a Ficha Técnica desse seu imóvel antes, ou é a nossa primeira vez lá? 📝", ["Já fizemos a Ficha", "Primeira vez"])
+        q_ident = st.text_input("Ah, maravilha! Então me lembra só qual é a Torre e o número do apartamento para eu puxar o seu padrão de qualidade aqui? 🏢🚪 (Ex: Torre Formosa, Apto 509)")
+        q_data = st.date_input("Que ótimo, mais uma limpeza agendada! Qual é a data que está reservada para nós? 🗓️✅", date.today())
+        q_hospedes = st.text_input("Quantas pessoas entram nessa reserva? 👥 (Pergunto só para eu ter uma ideia do volume da casa e preparar tudo direitinho)")
+        q_banho = st.text_input("Para essa estadia, quantas toalhas de banho e de rosto eu devo separar e deixar prontinhas? 🛁")
+        q_cama = st.text_input("Quantas camas eu preciso preparar dessa vez? E deixo quantos travesseiros e cobertores extras disponíveis no armário? 🛏️")
+        q_amenities = st.text_input("Quantos rolos de papel higiênico, sabonetes e shampoos eu devo deixar para esses hóspedes? 🧻🧴")
+        q_mimos = st.text_input("Tem algum 'mimo' especial para essa reserva (bombom, cápsulas de café, bilhetinho)? Quantos eu deixo preparados? 🍬")
+        q_notas = st.text_area("Tem algum detalhe especial ou pedido diferente para essa limpeza de hoje? (Ex: 'Sandra, o moço do ar-condicionado vai lá às 14h'). Pode me falar que eu cuido! 😉✨")
+        
         btn_gen = st.form_submit_button("🚀 Gerar Ordem com Segurança")
     
     if btn_gen:
-        payload = {"Data": dt.strftime("%d/%m/%Y"), "Hóspedes": hs or "Não informado", "Obs": ob}
-        # Gera a imagem com as novas marcas d'água
+        dt_str = q_data.strftime("%d/%m/%Y")
+        payload = {
+            "data_limpeza": dt_str,
+            "categorias": [
+                ("📋 INFORMAÇÕES GERAIS", [
+                    ("Status do Cadastro", q_cadastro),
+                    ("Identificação Rápida", q_ident),
+                    ("Data da Limpeza", dt_str),
+                    ("Qtd. Hóspedes", q_hospedes)
+                ]),
+                ("🧺 ENXOVAL E PREPARAÇÃO", [
+                    ("Enxoval de Banho", q_banho),
+                    ("Enxoval de Cama", q_cama)
+                ]),
+                ("🧴 AMENITIES E MIMOS", [
+                    ("Consumíveis", q_amenities),
+                    ("Mimos", q_mimos)
+                ]),
+                ("⚠️ NOTAS ESPECIAIS", [
+                    ("Observações", q_notas)
+                ])
+            ]
+        }
+        
         img_os = criar_imagem_profissional(payload, "rotina")
         st.image(img_os, use_container_width=True)
         
-        msg_whatsapp = f"Olá! Segue a Ordem de Serviço para o dia {payload['Data']}. Hóspedes: {payload['Hóspedes']}."
-        # Usa o botão de compartilhamento nativo (que anexa a imagem)
-        injetar_botao_compartilhar(img_os, msg_whatsapp, f"OS_{payload['Data'].replace('/','-')}.png")
+        msg_whatsapp = f"Olá! Segue a Ordem de Serviço confirmada para o dia {dt_str} no apto {q_ident}."
+        injetar_botao_compartilhar(img_os, msg_whatsapp, f"OS_{dt_str.replace('/','-')}.png")
 
+# --- ABA 2: FICHA DO IMÓVEL ---
 with tab_imovel:
-    st.subheader("Cadastro de Regras Fixas")
+    st.subheader("Ficha do Imóvel (O Padrão Fixo de Qualidade)")
+    st.info("Olá! Para eu deixar tudo impecável e seguir exatamente o seu padrão de qualidade (e não te incomodar com perguntas bem na hora da limpeza), preparei este checklist rápido. Respondendo isso uma única vez, eu salvo no meu sistema e sigo sempre o seu jeito! Quando puder, me confirma? 🥰✨")
+    
     with st.form("form_imovel"):
-        prop = st.text_input("Nome/Código do Imóvel:")
-        st.markdown("---")
-        c1, c2 = st.columns(2)
-        mnt = c1.radio("Montagem das Camas:", ["Padrão", "Camas Separadas"])
-        tua = c2.text_input("Localização das Toalhas:", placeholder="Ex: Prateleira superior")
-        rps = c1.radio("Processamento de Roupa Suja:", ["Lavar no Local", "Recolher p/ Lavanderia"])
-        prd = c2.radio("Fornecimento de Insumos:", ["Proprietário", "Prestador"])
-        amn = st.text_input("Amenities (Quantidade):", placeholder="Ex: 2 sabonetes, 1 shampoo")
-        gel = st.radio("Protocolo Geladeira:", ["Esvaziar e limpar", "Manter itens lacrados"])
-        lxo = st.text_input("Ponto de Descarte de Lixo:")
-        ent = st.text_area("Protocolo de Acesso (Senhas/Chaves):")
+        st.markdown("### 📍 1. IDENTIFICAÇÃO DO IMÓVEL")
+        i_prop = st.text_input("Para começar, qual o nome do proprietário ou responsável por esse imóvel? 👤")
+        i_end = st.text_input("Qual é o endereço completo do imóvel? (Rua, número, bairro e CEP, se souber) 📍")
+        i_cond = st.text_input("Qual é o nome do Edifício ou Condomínio? 🏢 (Ex: Rio Wonder)")
+        i_apto = st.text_input("E para eu achar rapidinho: qual é a Torre ou Bloco, e o número do apartamento? 🏗️🚪")
+        
+        st.markdown("### 🔑 2. ACESSO E SEGURANÇA")
+        i_acesso = st.text_area("Como vai ser a minha entrada no dia da limpeza? 🔑 (Chave na portaria, senha na porta, cofre...)")
+        i_senhas = st.text_input("Quais são as senhas que vou precisar? (Da portaria, da porta principal...)")
+        i_cofre = st.text_input("Se a gente for usar um cofre de chaves (lockbox), qual é a senha e onde ele costuma ficar escondidinho? 🤫")
+        i_emerg = st.text_input("Sabe como é, né? Se a bateria da fechadura eletrônica acabar, tem alguma chave física de emergência? Onde ela fica? 😅")
+        i_alarme = st.text_input("O imóvel tem alarme? Se sim, me passa o código para eu desativar assim que entrar? 🚨")
+        
+        st.markdown("### 🧹 3. EQUIPAMENTOS E MATERIAIS")
+        i_aspirador = st.text_input("Aí no apartamento tem um aspirador de pó funcionando direitinho? Ah, e a voltagem das tomadas é 110v ou 220v? 🔌")
+        i_materiais = st.text_input("Posso contar com vassoura, rodo, balde, panos e escadinha aí no apto, ou é melhor eu levar os meus?")
+        i_produtos = st.text_input("Sobre os produtos de limpeza: você costuma fornecer tudo (detergente, desinfetante) ou prefere que eu leve o meu kit?")
+        i_proibido = st.text_input("Isso é muito importante: tem algum produto que é PROIBIDO usar no piso ou nas bancadas para não manchar de jeito nenhum? 🚫")
+        
+        st.markdown("### 🛏️ 4. QUARTOS E ROUPA DE CAMA")
+        i_guardar = st.text_input("Onde você costuma guardar as roupas de cama e banho limpas? 🧺")
+        i_suja = st.text_input("O que eu faço com a roupa suja que os hóspedes usaram? (Lavo na máquina do apto, deixo no cesto, coloco em sacola pra lavanderia?)")
+        i_montar = st.text_input("Como você prefere que eu monte as camas? Aquele padrão de hotel (bem esticadinho com a peseira) ou mais simples (só as roupas dobradas em cima)?")
+        
+        st.markdown("### 🚿 5. BANHEIROS E AMENITIES")
+        i_shampoo = st.text_input("Para o sabonete e shampoo: você prefere que eu reabasteça aqueles frascos grandes ou que eu coloque miniaturas novas a cada check-in? 🧴")
+        i_toalhas = st.text_input("Onde você prefere que eu arrume as toalhas limpas? (Em cima da cama, no rack do banheiro...)")
+        
+        st.markdown("### 🍽️ 6. COZINHA E GELADEIRA")
+        i_geladeira = st.text_input("Se tiver sobrado comida ou bebida dos hóspedes anteriores na geladeira, o que eu faço? Jogo tudo fora ou mantenho o que estiver fechado/lacrado? 🧊")
+        i_louca = st.text_input("E se deixarem louça suja na pia: eu lavo (e já está incluso no meu serviço) ou você prefere anotar para cobrar uma taxa extra deles?")
+        i_cozinha = st.text_input("Tem mais algum detalhe na cozinha que você gosta que eu fique de olho? (Ex: limpar o filtro da cafeteira, dar uma geral dentro do forno...)")
+        
+        st.markdown("### ✨ 7. FINALIZAÇÃO E DETALHES")
+        i_mimos_guardados = st.text_input("Onde ficam guardados os mimos de boas-vindas? (Para eu saber de onde pegar no dia da limpeza) 🍬")
+        i_ambiente = st.text_input("Ao terminar e fechar a porta, como devo deixar o ambiente? (Ex: ar-condicionado ligado no 24ºC pra não dar mofo, cortinas abertas ou fechadas?) 🌬️")
+        i_lixo = st.text_input("Onde eu faço o descarte final de todo o lixo aí no prédio? 🗑️")
+        
         btn_imovel = st.form_submit_button("💾 Gerar Ficha Protegida")
         
     if btn_imovel:
-        dados_imovel = {
-            "Propriedade": prop, "Montagem": mnt, "Toalhas": tua, "Roupa Suja": rps,
-            "Produtos": prd, "Amenities": amn, "Geladeira": gel, "Lixo": lxo, "Entrada": ent
+        payload_imovel = {
+            "nome_prop": i_prop,
+            "categorias": [
+                ("📍 IDENTIFICAÇÃO DO IMÓVEL", [
+                    ("Responsável", i_prop),
+                    ("Endereço", i_end),
+                    ("Condomínio", i_cond),
+                    ("Torre/Apto", i_apto)
+                ]),
+                ("🔑 ACESSO E SEGURANÇA", [
+                    ("Entrada", i_acesso),
+                    ("Senhas", i_senhas),
+                    ("Lockbox", i_cofre),
+                    ("Chave de Emergência", i_emerg),
+                    ("Alarme", i_alarme)
+                ]),
+                ("🧹 EQUIPAMENTOS E MATERIAIS", [
+                    ("Aspirador/Voltagem", i_aspirador),
+                    ("Materiais Básicos", i_materiais),
+                    ("Produtos de Limpeza", i_produtos),
+                    ("PRODUTOS PROIBIDOS", i_proibido)
+                ]),
+                ("🛏️ QUARTOS E ROUPA DE CAMA", [
+                    ("Local do Enxoval Limpo", i_guardar),
+                    ("Roupa Suja", i_suja),
+                    ("Montagem das Camas", i_montar)
+                ]),
+                ("🚿 BANHEIROS E AMENITIES", [
+                    ("Sabonete/Shampoo", i_shampoo),
+                    ("Disposição das Toalhas", i_toalhas)
+                ]),
+                ("🍽️ COZINHA E GELADEIRA", [
+                    ("Sobras na Geladeira", i_geladeira),
+                    ("Louça Suja", i_louca),
+                    ("Atenção Especial", i_cozinha)
+                ]),
+                ("✨ FINALIZAÇÃO E DETALHES", [
+                    ("Local dos Mimos", i_mimos_guardados),
+                    ("Clima/Ambiente Final", i_ambiente),
+                    ("Descarte de Lixo", i_lixo)
+                ])
+            ]
         }
-        # Gera a imagem com as novas marcas d'água
-        img_fch = criar_imagem_profissional(dados_imovel, "imovel")
+
+        img_fch = criar_imagem_profissional(payload_imovel, "imovel")
         st.image(img_fch, use_container_width=True)
         
-        msg_fch = f"Ficha Técnica Atualizada: {prop}. Seguir os protocolos da imagem."
-        # Usa o botão de compartilhamento nativo
-        injetar_botao_compartilhar(img_fch, msg_fch, f"Ficha_{prop}.png")
+        msg_fch = f"Ficha Técnica Atualizada: {i_prop}. Muito obrigada por preencher!"
+        injetar_botao_compartilhar(img_fch, msg_fch, f"Ficha_{i_prop}.png")
