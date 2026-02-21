@@ -115,7 +115,8 @@ st.markdown("""
 # ==============================================================================
 def criar_imagem_profissional(dados, tipo):
     width = 850
-    height = 2800 if tipo == "imovel" else 1500
+    # Aumentado o limite de altura da ficha do imóvel para acomodar as novas perguntas
+    height = 3800 if tipo == "imovel" else 1500
     
     image = Image.new("RGBA", (width, height), "white")
     draw = ImageDraw.Draw(image)
@@ -202,7 +203,7 @@ def injetar_botao_compartilhar(img, texto_corpo, nome_arquivo="ordem_servico.png
     js_interface = f"""
     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; font-family: 'Inter', sans-serif; margin-top: 20px;">
         <div style="background-color: #FFF8E1; color: #F57F17; padding: 12px; border-radius: 10px; font-size: 14px; border: 1px solid #FFECB3; width: 100%; text-align: center; font-weight: 500;">
-           ✨ Lembre-se de enviar para <strong>Sandra: (21) 96929-3505</strong>
+            ✨ Lembre-se de enviar para <strong>Sandra: (21) 96929-3505</strong>
         </div>
         <button id="btnShare" style="
             background: linear-gradient(135deg, #25D366 0%, #128C7E 100%); color: white; border: none; padding: 16px 28px; 
@@ -255,9 +256,127 @@ def injetar_botao_compartilhar(img, texto_corpo, nome_arquivo="ordem_servico.png
 st.markdown("<h1 style='text-align: center; color: #188038; margin-bottom: 5px;'>✨ App da Sandra</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #666; font-size: 16px; margin-bottom: 30px;'>Organização e qualidade para deixar tudo impecável!</p>", unsafe_allow_html=True)
 
-tab_rotina, tab_imovel = st.tabs(["📅 Rotina Operacional", "🏢 Ficha do Imóvel"])
+# Invertendo a ordem das abas aqui
+tab_imovel, tab_rotina = st.tabs(["🏢 Ficha do Imóvel", "📅 Solicitação de Limpeza"])
 
-# --- ABA 1: ROTINA OPERACIONAL ---
+# --- ABA 1: FICHA DO IMÓVEL (AGORA É A PRIMEIRA) ---
+with tab_imovel:
+    st.info("Olá! Para eu deixar tudo impecável e seguir exatamente o seu padrão de qualidade (e não te incomodar com perguntas bem na hora da limpeza), preparei este checklist rápido. Respondendo isso uma única vez, eu salvo no meu sistema e sigo sempre o seu jeito! Quando puder, me confirma? 🥰✨")
+    
+    with st.form("form_imovel"):
+        st.markdown("### 📍 1. Identificação do Imóvel")
+        i_prop = st.text_input("Para começar, qual o nome do proprietário ou responsável por esse imóvel? 👤")
+        i_end = st.text_input("Qual é o endereço completo do imóvel? (Rua, número, bairro e CEP, se souber) 📍")
+        i_cond = st.text_input("Qual é o nome do Edifício ou Condomínio? 🏢 (Ex: Rio Wonder)")
+        i_apto = st.text_input("Qual é a Torre ou Bloco, e o número do apartamento? 🏗️🚪")
+        
+        st.markdown("<br>### 🔑 2. Acesso", unsafe_allow_html=True)
+        i_acesso_unico = st.text_area("Como vai ser a minha entrada no dia da limpeza? 🔑 (Chave na portaria, senha na porta, cofre...) e se for senha, qual a senha?")
+        
+        st.markdown("<br>### 🧹 3. Equipamentos, Climatização e Materiais", unsafe_allow_html=True)
+        i_aspirador = st.text_input("Aí no apartamento tem um aspirador de pó funcionando direitinho? Ah, e a voltagem das tomadas é 110v ou 220v? 🔌")
+        i_materiais = st.text_input("Posso contar com vassoura, rodo, balde, panos e escadinha aí no apto?")
+        i_produtos = st.text_input("Sobre os produtos de limpeza: prefere que eu use o meu kit ou você fornece? Se você deixa os produtos, me conta rapidinho quais são e se tem alguma instrução simples de como você gosta que eu os use! 🧽")
+        i_proibido = st.text_input("Isso é muito importante: tem algum produto que é PROIBIDO usar no piso, nas bancadas ou nos móveis para não manchar de jeito nenhum? 🚫")
+        i_ventiladores = st.text_input("E sobre os ventiladores (que também acumulam aquela poeirinha chata): tem ventilador de teto? Se sim, quantos? E de chão, tem algum? 🌬️")
+        
+        st.markdown("<br>### 🛏️ 4. Quartos e Roupa de Cama", unsafe_allow_html=True)
+        i_guardar = st.text_input("Onde você costuma guardar as roupas de cama e banho limpas? 🧺")
+        i_suja = st.text_input("Onde deixo a roupa suja que os hóspedes usaram? ")
+        i_montar = st.text_input("Como você prefere que eu monte as camas? Quantos travesseiros? Edredom? Lençol de elástico? Peço para me contar com detalhes como é sua forma de trabalho pois cada casa dispõe de itens de cama mesa e banho distintos.")
+        
+        st.markdown("<br>### 🚿 5. Banheiros e Amenities", unsafe_allow_html=True)
+        i_shampoo = st.text_input("Para o sabonete, shampoo e condicionador: você oferece? Quais oferece e onde ficam os itens de reposição? 🧴")
+        i_toalhas = st.text_input("Onde você prefere que eu deixe as toalhas limpas? (Em cima da cama, no rack do banheiro...) Detalhe: Sei fazer arrumações de toalhas")
+        
+        st.markdown("<br>### 🍽️ 6. Cozinha e Geladeira", unsafe_allow_html=True)
+        i_geladeira = st.text_input("Se tiver sobrado comida ou bebida dos hóspedes anteriores na geladeira, o que eu faço? Jogo tudo fora ou mantenho o que estiver fechado/lacrado? 🧊")
+        i_louca = st.text_input("E se deixarem louça suja na pia: eu lavo (e já está incluso no meu serviço) ou você prefere anotar para cobrar uma taxa extra deles?")
+        
+        opcoes_cozinha = [
+            "Fogão tradicional", "Cooktop", "Forno (elétrico ou a gás)", "Micro-ondas", 
+            "Airfryer", "Panela elétrica de arroz", "Panela de pressão elétrica (feijão/carnes)", 
+            "Filtro / Purificador de água", "Coifa / Depurador / Exaustor de gordura", 
+            "Sanduicheira / Grill", "Liquidificador", "Cafeteira (tradicional ou de cápsula)", 
+            "Torradeira", "Chaleira elétrica", "Batedeira", "Lava-louças", "Outros"
+        ]
+        i_eletros = st.multiselect("Quais eletrodomésticos e equipamentos ficam disponíveis na cozinha para os hóspedes (e que vão precisar da minha atenção na limpeza)? Pode marcar tudo o que tiver na casa: 🍳", opcoes_cozinha)
+        
+        i_eletros_outros = ""
+        if "Outros" in i_eletros:
+            i_eletros_outros = st.text_input("Quais outros equipamentos tem na cozinha?")
+            
+        i_quantitativos = st.text_input("Para a gente manter o controle: você deixa um número exato de pratos, copos e talheres (facas, garfos, colheres de sopa e de sobremesa)? Se sim, me passa as quantidades para eu conferir na hora da limpeza e te avisar se faltar algo! 🍽️")
+        i_cozinha = st.text_input("Tem mais algum detalhe na cozinha que eu deva deixar para os hóspedes (sal, açucar) ou algo que queira me contar?")
+        
+        st.markdown("<br>### ✨ 7. Finalização e Detalhes", unsafe_allow_html=True)
+        i_mimos_guardados = st.text_input("Se houver mimos de boas vindas, (chocolates, biscoitos, etc) onde ficam guardados? (Para eu saber de onde pegar no dia da limpeza) 🍬")
+        i_ambiente = st.text_input("Ao terminar e fechar a porta, como devo deixar o ambiente? (Ex: cortinas abertas ou fechadas, luzes acessas ou apagadas?) 🌬️")
+        i_lixo = st.text_input("Onde eu faço o descarte final de todo o lixo aí no prédio? 🗑️")
+        i_obs_finais = st.text_area("Para fecharmos: deseja acrescentar alguma observação importante ou detalhe sobre o apartamento que ainda não conversamos por aqui? 📝")
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        btn_imovel = st.form_submit_button("💾 Gerar Ficha Protegida")
+        
+    if btn_imovel:
+        # Lógica para formatar os eletrodomésticos para a imagem
+        eletros_selecionados = [e for e in i_eletros if e != "Outros"]
+        str_eletros = ", ".join(eletros_selecionados)
+        if i_eletros_outros:
+            str_eletros += f", {i_eletros_outros}" if str_eletros else i_eletros_outros
+            
+        payload_imovel = {
+            "nome_prop": i_prop,
+            "categorias": [
+                ("📍 IDENTIFICAÇÃO DO IMÓVEL", [
+                    ("Responsável", i_prop),
+                    ("Endereço", i_end),
+                    ("Condomínio", i_cond),
+                    ("Torre/Apto", i_apto)
+                ]),
+                ("🔑 ACESSO E SEGURANÇA", [
+                    ("Acesso e Senhas", i_acesso_unico)
+                ]),
+                ("🧹 EQUIPAMENTOS, CLIMATIZAÇÃO E MATERIAIS", [
+                    ("Aspirador/Voltagem", i_aspirador),
+                    ("Materiais Básicos", i_materiais),
+                    ("Produtos de Limpeza", i_produtos),
+                    ("PRODUTOS PROIBIDOS", i_proibido),
+                    ("Ventiladores", i_ventiladores)
+                ]),
+                ("🛏️ QUARTOS E ROUPA DE CAMA", [
+                    ("Local do Enxoval Limpo", i_guardar),
+                    ("Roupa Suja", i_suja),
+                    ("Montagem das Camas", i_montar)
+                ]),
+                ("🚿 BANHEIROS E AMENITIES", [
+                    ("Sabonete/Shampoo", i_shampoo),
+                    ("Disposição das Toalhas", i_toalhas)
+                ]),
+                ("🍽️ COZINHA E GELADEIRA", [
+                    ("Sobras na Geladeira", i_geladeira),
+                    ("Louça Suja", i_louca),
+                    ("Eletrodomésticos", str_eletros if str_eletros else "Nenhum informado"),
+                    ("Quantitativo de Louça", i_quantitativos),
+                    ("Atenção Especial", i_cozinha)
+                ]),
+                ("✨ FINALIZAÇÃO E DETALHES", [
+                    ("Local dos Mimos", i_mimos_guardados),
+                    ("Clima/Ambiente Final", i_ambiente),
+                    ("Descarte de Lixo", i_lixo),
+                    ("Observações Finais", i_obs_finais)
+                ])
+            ]
+        }
+
+        img_fch = criar_imagem_profissional(payload_imovel, "imovel")
+        st.markdown("### Documento Gerado com Sucesso! 🎉")
+        st.image(img_fch, use_container_width=True)
+        
+        msg_fch = f"Ficha Técnica Atualizada: {i_prop}. Muito obrigada por preencher!"
+        injetar_botao_compartilhar(img_fch, msg_fch, f"Ficha_{i_prop}.png")
+
+# --- ABA 2: SOLICITAÇÃO DE LIMPEZA (AGORA É A SEGUNDA) ---
 with tab_rotina:
     st.markdown("### 🗓️ Visão Geral da Agenda")
     cal_url = "https://calendar.google.com/calendar/embed?src=sandramjo26%40gmail.com&mode=AGENDA"
@@ -278,7 +397,7 @@ with tab_rotina:
         q_cama = st.text_input("Quantas camas eu preciso preparar dessa vez? E deixo quantos travesseiros e cobertores? Peço que me fale tudo sobre as roupas de cama, incluindo se devo usar cobre leitos, edredoms, etc 🛏️")
         q_amenities = st.text_input("Quantos rolos de papel higiênico, sabonetes e shampoos eu devo deixar no total? 🧻🧴")
         q_mimos = st.text_input("Tem algum 'mimo' especial para essa reserva (chocolates, biscoitos, cápsulas de café)? Quantos eu deixo preparados? 🍬")
-        q_notas = st.text_area("Tem algum detalhe especial ou pedido diferente para essa limpeza de hoje? (Ex: 'Sandra, preciso que verifique se terá roupas de cama limpas sobrando para a próxima hospedagem.'). Pode me falar que dependendo do que for eu tento verificar! 😉✨")
+        q_notas = st.text_area("Para fecharmos a solicitação: deseja acrescentar alguma observação importante ou pedido especial para essa limpeza que ainda não conversamos? Pode me falar que dependendo do que for eu tento verificar! 😉✨")
         
         st.markdown("<br>", unsafe_allow_html=True)
         btn_gen = st.form_submit_button("🚀 Gerar Ordem de Serviço de Limpeza")
@@ -314,93 +433,3 @@ with tab_rotina:
         
         msg_whatsapp = f"Olá! Segue a Ordem de Serviço confirmada para o dia {dt_str} no apto {q_ident}."
         injetar_botao_compartilhar(img_os, msg_whatsapp, f"OS_{dt_str.replace('/','-')}.png")
-
-# --- ABA 2: FICHA DO IMÓVEL ---
-with tab_imovel:
-    st.info("Olá! Para eu deixar tudo impecável e seguir exatamente o seu padrão de qualidade (e não te incomodar com perguntas bem na hora da limpeza), preparei este checklist rápido. Respondendo isso uma única vez, eu salvo no meu sistema e sigo sempre o seu jeito! Quando puder, me confirma? 🥰✨")
-    
-    with st.form("form_imovel"):
-        st.markdown("### 📍 1. Identificação do Imóvel")
-        i_prop = st.text_input("Para começar, qual o nome do proprietário ou responsável por esse imóvel? 👤")
-        i_end = st.text_input("Qual é o endereço completo do imóvel? (Rua, número, bairro e CEP, se souber) 📍")
-        i_cond = st.text_input("Qual é o nome do Edifício ou Condomínio? 🏢 (Ex: Rio Wonder)")
-        i_apto = st.text_input("Qual é a Torre ou Bloco, e o número do apartamento? 🏗️🚪")
-        
-        st.markdown("<br>### 🔑 2. Acesso", unsafe_allow_html=True)
-        i_acesso_unico = st.text_area("Como vai ser a minha entrada no dia da limpeza? 🔑 (Chave na portaria, senha na porta, cofre...) e se for senha, qual a senha?")
-        
-        st.markdown("<br>### 🧹 3. Equipamentos e Materiais", unsafe_allow_html=True)
-        i_aspirador = st.text_input("Aí no apartamento tem um aspirador de pó funcionando direitinho? Ah, e a voltagem das tomadas é 110v ou 220v? 🔌")
-        i_materiais = st.text_input("Posso contar com vassoura, rodo, balde, panos e escadinha aí no apto?")
-        i_produtos = st.text_input("Sobre os produtos de limpeza: você costuma fornecer tudo ou posso usar o meu kit?")
-        i_proibido = st.text_input("Isso é muito importante: tem algum produto que é PROIBIDO usar no piso, nas bancadas ou nos móveis para não manchar de jeito nenhum? 🚫")
-        
-        st.markdown("<br>### 🛏️ 4. Quartos e Roupa de Cama", unsafe_allow_html=True)
-        i_guardar = st.text_input("Onde você costuma guardar as roupas de cama e banho limpas? 🧺")
-        i_suja = st.text_input("Onde deixo a roupa suja que os hóspedes usaram? ")
-        i_montar = st.text_input("Como você prefere que eu monte as camas? Quantos travesseiros? Edredom? Lençol de elástico? Peço para me contar com detalhes como é sua forma de trabalho pois cada casa dispõe de itens de cama mesa e banho distintos.")
-        
-        st.markdown("<br>### 🚿 5. Banheiros e Amenities", unsafe_allow_html=True)
-        i_shampoo = st.text_input("Para o sabonete, shampoo e condicionador: você oferece? Quais oferece e onde ficam os itens de reposição? 🧴")
-        i_toalhas = st.text_input("Onde você prefere que eu deixe as toalhas limpas? (Em cima da cama, no rack do banheiro...) Detalhe: Sei fazer arrumações de toalhas")
-        
-        st.markdown("<br>### 🍽️ 6. Cozinha e Geladeira", unsafe_allow_html=True)
-        i_geladeira = st.text_input("Se tiver sobrado comida ou bebida dos hóspedes anteriores na geladeira, o que eu faço? Jogo tudo fora ou mantenho o que estiver fechado/lacrado? 🧊")
-        i_louca = st.text_input("E se deixarem louça suja na pia: eu lavo (e já está incluso no meu serviço) ou você prefere anotar para cobrar uma taxa extra deles?")
-        i_cozinha = st.text_input("Tem mais algum detalhe na cozinha que eu deva deixar para os hóspedes (sal, açucar) ou algo que queira me contar?")
-        
-        st.markdown("<br>### ✨ 7. Finalização e Detalhes", unsafe_allow_html=True)
-        i_mimos_guardados = st.text_input("Se houver mimos de boas vindas, (chocolates, biscoitos, etc) onde ficam guardados? (Para eu saber de onde pegar no dia da limpeza) 🍬")
-        i_ambiente = st.text_input("Ao terminar e fechar a porta, como devo deixar o ambiente? (Ex: cortinas abertas ou fechadas, luzes acessas ou apagadas?) 🌬️")
-        i_lixo = st.text_input("Onde eu faço o descarte final de todo o lixo aí no prédio? 🗑️")
-        
-        st.markdown("<br>", unsafe_allow_html=True)
-        btn_imovel = st.form_submit_button("💾 Gerar Ficha Protegida")
-        
-    if btn_imovel:
-        payload_imovel = {
-            "nome_prop": i_prop,
-            "categorias": [
-                ("📍 IDENTIFICAÇÃO DO IMÓVEL", [
-                    ("Responsável", i_prop),
-                    ("Endereço", i_end),
-                    ("Condomínio", i_cond),
-                    ("Torre/Apto", i_apto)
-                ]),
-                ("🔑 ACESSO E SEGURANÇA", [
-                    ("Acesso e Senhas", i_acesso_unico)
-                ]),
-                ("🧹 EQUIPAMENTOS E MATERIAIS", [
-                    ("Aspirador/Voltagem", i_aspirador),
-                    ("Materiais Básicos", i_materiais),
-                    ("Produtos de Limpeza", i_produtos),
-                    ("PRODUTOS PROIBIDOS", i_proibido)
-                ]),
-                ("🛏️ QUARTOS E ROUPA DE CAMA", [
-                    ("Local do Enxoval Limpo", i_guardar),
-                    ("Roupa Suja", i_suja),
-                    ("Montagem das Camas", i_montar)
-                ]),
-                ("🚿 BANHEIROS E AMENITIES", [
-                    ("Sabonete/Shampoo", i_shampoo),
-                    ("Disposição das Toalhas", i_toalhas)
-                ]),
-                ("🍽️ COZINHA E GELADEIRA", [
-                    ("Sobras na Geladeira", i_geladeira),
-                    ("Louça Suja", i_louca),
-                    ("Atenção Especial", i_cozinha)
-                ]),
-                ("✨ FINALIZAÇÃO E DETALHES", [
-                    ("Local dos Mimos", i_mimos_guardados),
-                    ("Clima/Ambiente Final", i_ambiente),
-                    ("Descarte de Lixo", i_lixo)
-                ])
-            ]
-        }
-
-        img_fch = criar_imagem_profissional(payload_imovel, "imovel")
-        st.markdown("### Documento Gerado com Sucesso! 🎉")
-        st.image(img_fch, use_container_width=True)
-        
-        msg_fch = f"Ficha Técnica Atualizada: {i_prop}. Muito obrigada por preencher!"
-        injetar_botao_compartilhar(img_fch, msg_fch, f"Ficha_{i_prop}.png")
