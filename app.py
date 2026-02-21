@@ -314,7 +314,7 @@ with tab_imovel:
         st.markdown("### 🧹 2. Equipamentos, Climatização e Materiais")
         i_aspirador = st.text_input("Aí no apartamento tem um aspirador de pó funcionando direitinho? Ah, e a voltagem das tomadas é 110v ou 220v? 🔌")
         i_materiais = st.text_input("Posso contar com vassoura, rodo, balde, panos e escadinha aí no apto?")
-        i_produtos = st.text_input("Sobre os produtos de limpeza: prefere que eu use o meu kit ou você fornece? Se você deixa os produtos, há alguma instrução especial de como gosta que os use? Ex: "Tenho um Cheirinho de Ambiente específico que deixo aí. Peço que passe o spray nas roupas de cama e cortinas")
+        i_produtos = st.text_input("Sobre os produtos de limpeza: prefere que eu use o meu kit ou você fornece? Se você deixa os produtos, há alguma instrução especial de como gosta que os use? Ex: 'Tenho um Cheirinho de Ambiente específico que deixo aí. Peço que passe o spray nas roupas de cama e cortinas')
         i_proibido = st.text_input("Isso é muito importante: tem algum produto que é PROIBIDO ou que não queira que seja usado nos pisos, nas bancadas ou nos móveis? 🚫")
         i_ventiladores = st.text_input("E sobre os ventiladores: tem ventilador de teto? Se sim, quantos? E de chão, tem algum? 🌬️")
         
