@@ -11,7 +11,6 @@ import requests # Biblioteca para buscar o CEP na internet
 st.set_page_config(page_title="Gestão de Limpeza Automatizada", page_icon="✨", layout="centered")
 
 # --- INICIALIZAÇÃO DE VARIÁVEIS DE MEMÓRIA (SESSION STATE) ---
-# Isso garante que os campos de endereço conectem com a busca do CEP
 if "rua_input" not in st.session_state: st.session_state.rua_input = ""
 if "bairro_input" not in st.session_state: st.session_state.bairro_input = ""
 if "cidade_uf_input" not in st.session_state: st.session_state.cidade_uf_input = ""
@@ -21,21 +20,18 @@ def buscar_cep():
     cep = st.session_state.cep_input.replace("-", "").replace(".", "").strip()
     if len(cep) == 8 and cep.isdigit():
         try:
-            # Consulta a API gratuita do ViaCEP
             response = requests.get(f"https://viacep.com.br/ws/{cep}/json/", timeout=5)
             data = response.json()
             if "erro" not in data:
-                # Se achou o CEP, preenche a memória do aplicativo com os dados
                 st.session_state.rua_input = data.get("logradouro", "")
                 st.session_state.bairro_input = data.get("bairro", "")
                 st.session_state.cidade_uf_input = f"{data.get('localidade', '')} / {data.get('uf', '')}"
         except:
-            pass # Se der erro de internet, ignora silenciosamente
+            pass 
 
 # --- ESTILOS VISUAIS (O "BANHO DE LOJA" BLINDADO) ---
 st.markdown("""
     <style>
-    /* Força um fundo claro na tela inteira */
     .stApp {
         background-color: #F4F7F6;
         font-family: 'Inter', 'Helvetica Neue', sans-serif;
@@ -130,7 +126,7 @@ st.markdown("""
 # ==============================================================================
 def criar_imagem_profissional(dados, tipo):
     width = 850
-    height = 4200 if tipo == "imovel" else 1500
+    height = 4200 if tipo == "imovel" else 1800 # Aumentei um pouco a da rotina para caber a senha
     
     image = Image.new("RGBA", (width, height), "white")
     draw = ImageDraw.Draw(image)
@@ -281,18 +277,15 @@ tab_imovel, tab_rotina = st.tabs(["🏢 Ficha do Imóvel", "📅 Solicitação d
 with tab_imovel:
     st.info("Olá! Para eu deixar tudo impecável e seguir exatamente o seu padrão de qualidade (e não te incomodar com perguntas bem na hora da limpeza), preparei este checklist rápido. Respondendo isso uma única vez, eu salvo no meu sistema e sigo sempre o seu jeito! Quando puder, me confirma? 🥰✨")
     
-    # --- O CAMPO DE CEP AGORA FICA AQUI FORA PARA PODER RODAR A FUNÇÃO ---
     st.markdown("### 🔎 Busca Rápida de Endereço")
     st.markdown("<div style='background-color: #E8F5E9; padding: 15px; border-radius: 10px; margin-bottom: 15px;'><span style='color: #188038; font-weight: bold;'>💡 Dica de Ouro:</span> Se você souber o CEP, digite apenas os números abaixo e <strong>pressione Enter no teclado</strong>. O endereço será preenchido automaticamente na ficha abaixo!</div>", unsafe_allow_html=True)
     
     i_cep = st.text_input("Digite o CEP e aperte Enter:", key="cep_input", on_change=buscar_cep)
     
-    # --- AQUI COMEÇA O FORMULÁRIO ONDE AS COISAS SÃO PREENCHIDAS ---
     with st.form("form_imovel"):
         st.markdown("### 📍 1. Identificação do Imóvel")
         i_prop = st.text_input("Para começar, qual o nome do proprietário ou responsável por esse imóvel? 👤")
         
-        # Os campos "key" abaixo servem para o formulário puxar a memória do CEP
         i_rua = st.text_input("Logradouro (Rua, Avenida, etc.)", key="rua_input")
         
         col_end1, col_end2 = st.columns(2)
@@ -311,26 +304,27 @@ with tab_imovel:
         i_cond = st.text_input("Qual é o nome do Edifício ou Condomínio? 🏢 (Ex: Rio Wonder)")
         i_apto = st.text_input("Qual é a Torre ou Bloco, e o número do apartamento? 🏗️🚪")
         
-        st.markdown("<br>### 🔑 2. Acesso", unsafe_allow_html=True)
-        i_acesso_unico = st.text_area("Como vai ser a minha entrada no dia da limpeza? 🔑 (Chave na portaria, senha na porta, cofre...) e se for senha, qual a senha?")
-        
-        st.markdown("<br>### 🧹 3. Equipamentos, Climatização e Materiais", unsafe_allow_html=True)
+        st.write("") # Pulo de linha limpo
+        st.markdown("### 🧹 2. Equipamentos, Climatização e Materiais")
         i_aspirador = st.text_input("Aí no apartamento tem um aspirador de pó funcionando direitinho? Ah, e a voltagem das tomadas é 110v ou 220v? 🔌")
         i_materiais = st.text_input("Posso contar com vassoura, rodo, balde, panos e escadinha aí no apto?")
         i_produtos = st.text_input("Sobre os produtos de limpeza: prefere que eu use o meu kit ou você fornece? Se você deixa os produtos, me conta rapidinho quais são e se tem alguma instrução simples de como você gosta que eu os use! 🧽")
         i_proibido = st.text_input("Isso é muito importante: tem algum produto que é PROIBIDO usar no piso, nas bancadas ou nos móveis para não manchar de jeito nenhum? 🚫")
         i_ventiladores = st.text_input("E sobre os ventiladores (que também acumulam aquela poeirinha chata): tem ventilador de teto? Se sim, quantos? E de chão, tem algum? 🌬️")
         
-        st.markdown("<br>### 🛏️ 4. Quartos e Roupa de Cama", unsafe_allow_html=True)
+        st.write("")
+        st.markdown("### 🛏️ 3. Quartos e Roupa de Cama")
         i_guardar = st.text_input("Onde você costuma guardar as roupas de cama e banho limpas? 🧺")
         i_suja = st.text_input("Onde deixo a roupa suja que os hóspedes usaram? ")
         i_montar = st.text_input("Como você prefere que eu monte as camas? Quantos travesseiros? Edredom? Lençol de elástico? Peço para me contar com detalhes como é sua forma de trabalho pois cada casa dispõe de itens de cama mesa e banho distintos.")
         
-        st.markdown("<br>### 🚿 5. Banheiros e Amenities", unsafe_allow_html=True)
+        st.write("")
+        st.markdown("### 🚿 4. Banheiros e Amenities")
         i_shampoo = st.text_input("Para o sabonete, shampoo e condicionador: você oferece? Quais oferece e onde ficam os itens de reposição? 🧴")
         i_toalhas = st.text_input("Onde você prefere que eu deixe as toalhas limpas? (Em cima da cama, no rack do banheiro...) Detalhe: Sei fazer arrumações de toalhas")
         
-        st.markdown("<br>### 🍽️ 6. Cozinha e Geladeira", unsafe_allow_html=True)
+        st.write("")
+        st.markdown("### 🍽️ 5. Cozinha e Geladeira")
         i_geladeira = st.text_input("Se tiver sobrado comida ou bebida dos hóspedes anteriores na geladeira, o que eu faço? Jogo tudo fora ou mantenho o que estiver fechado/lacrado? 🧊")
         i_louca = st.text_input("E se deixarem louça suja na pia: eu lavo (e já está incluso no meu serviço) ou você prefere anotar para cobrar uma taxa extra deles?")
         
@@ -360,7 +354,8 @@ with tab_imovel:
         i_quantitativos = st.text_input("Para a gente manter o controle: você deixa um número exato de pratos, copos e talheres (facas, garfos, colheres de sopa e de sobremesa)? Se sim, me passa as quantidades para eu conferir na hora da limpeza e te avisar se faltar algo! 🍽️")
         i_cozinha = st.text_input("Tem mais algum detalhe na cozinha que eu deva deixar para os hóspedes (sal, açucar) ou algo que queira me contar?")
         
-        st.markdown("<br>### ✨ 7. Finalização e Detalhes", unsafe_allow_html=True)
+        st.write("")
+        st.markdown("### ✨ 6. Finalização e Detalhes")
         i_mimos_guardados = st.text_input("Se houver mimos de boas vindas, (chocolates, biscoitos, etc) onde ficam guardados? (Para eu saber de onde pegar no dia da limpeza) 🍬")
         i_ambiente = st.text_input("Ao terminar e fechar a porta, como devo deixar o ambiente? (Ex: cortinas abertas ou fechadas, luzes acessas ou apagadas?) 🌬️")
         i_lixo = st.text_input("Onde eu faço o descarte final de todo o lixo aí no prédio? 🗑️")
@@ -370,7 +365,6 @@ with tab_imovel:
         btn_imovel = st.form_submit_button("💾 Gerar Ficha Protegida")
         
     if btn_imovel:
-        # Montar a string da tabela de eletrodomésticos para a imagem
         lista_eletros_texto = []
         for opcao, marcado in eletros_selecionados.items():
             marca = "[ X ]" if marcado else "[   ]"
@@ -383,7 +377,6 @@ with tab_imovel:
             
         str_eletros = "\n".join(lista_eletros_texto)
 
-        # Montar o endereço final em uma linha
         endereco_final = f"{i_rua}"
         if i_num: endereco_final += f", {i_num}"
         if i_comp: endereco_final += f" - {i_comp}"
@@ -399,9 +392,6 @@ with tab_imovel:
                     ("Endereço Completo", endereco_final),
                     ("Condomínio", i_cond),
                     ("Torre/Apto", i_apto)
-                ]),
-                ("🔑 ACESSO E SEGURANÇA", [
-                    ("Acesso e Senhas", i_acesso_unico)
                 ]),
                 ("🧹 EQUIPAMENTOS, CLIMATIZAÇÃO E MATERIAIS", [
                     ("Aspirador/Voltagem", i_aspirador),
@@ -460,6 +450,13 @@ with tab_rotina:
         q_cadastro = st.radio("Me tira uma dúvida rápida: a gente já fez a Ficha Técnica desse seu imóvel antes, ou é a nossa primeira vez lá? 📝", ["Já fizemos a Ficha", "Primeira vez"])
         q_ident = st.text_input("Ah, maravilha! Então me lembra só qual é a Torre e o número do apartamento para eu puxar o seu padrão de qualidade aqui? 🏢🚪 (Ex: Torre Formosa, Apto 509)")
         q_data = st.date_input("Qual é a data gostaria de reservar? 🗓️✅", date.today())
+        
+        st.write("")
+        st.markdown("### 🔑 Acesso")
+        q_acesso = st.text_area("Como vai ser a minha entrada no dia dessa limpeza? 🔑 (Chave na portaria, senha na porta, cofre...) e se for senha, qual a senha?")
+        
+        st.write("")
+        st.markdown("### 📋 Informações da Reserva")
         q_hospedes = st.text_input("Quantas pessoas entram nessa reserva? 👥 (Pergunto só para eu ter uma ideia do que será necessário preparar)")
         q_banho = st.text_input("Quantas toalhas de banho e de rosto eu devo separar no total? 🛁")
         q_cama = st.text_input("Quantas camas eu preciso preparar dessa vez? E deixo quantos travesseiros e cobertores? Peço que me fale tudo sobre as roupas de cama, incluindo se devo usar cobre leitos, edredoms, etc 🛏️")
@@ -480,6 +477,9 @@ with tab_rotina:
                     ("Identificação Rápida", q_ident),
                     ("Data da Limpeza", dt_str),
                     ("Qtd. Hóspedes", q_hospedes)
+                ]),
+                ("🔑 ACESSO E SEGURANÇA", [
+                    ("Instruções de Entrada/Senha", q_acesso)
                 ]),
                 ("🧺 ENXOVAL E PREPARAÇÃO", [
                     ("Enxoval de Banho", q_banho),
