@@ -115,8 +115,8 @@ st.markdown("""
 # ==============================================================================
 def criar_imagem_profissional(dados, tipo):
     width = 850
-    # Aumentado o limite de altura da ficha do imóvel para acomodar as novas perguntas
-    height = 3800 if tipo == "imovel" else 1500
+    # Aumentado para 4200 para garantir que a lista de checkboxes caiba na imagem
+    height = 4200 if tipo == "imovel" else 1500
     
     image = Image.new("RGBA", (width, height), "white")
     draw = ImageDraw.Draw(image)
@@ -163,9 +163,15 @@ def criar_imagem_profissional(dados, tipo):
             val_str = str(valor) if valor else "Não informado"
             draw.text((margin, y_pos), f"{rotulo}:", font=font_header, fill="#424242")
             y_pos += 30
-            for linha in textwrap.wrap(val_str, width=80):
-                draw.text((margin, y_pos), linha, font=font_text, fill="#757575")
-                y_pos += 25
+            
+            # Ajuste crucial: divide o texto por quebras de linha manuais antes de quebrar automaticamente (wrap)
+            for paragrafo in val_str.split('\n'):
+                # Wrap garante que o texto não ultrapasse a margem da imagem
+                linhas_wrap = textwrap.wrap(paragrafo, width=80) if paragrafo.strip() else [""]
+                for linha in linhas_wrap:
+                    draw.text((margin, y_pos), linha, font=font_text, fill="#757575")
+                    y_pos += 25
+            
             y_pos += 15
         draw.line([(margin, y_pos), (width-margin, y_pos)], fill="#eeeeee", width=2)
         y_pos += 25
@@ -256,10 +262,10 @@ def injetar_botao_compartilhar(img, texto_corpo, nome_arquivo="ordem_servico.png
 st.markdown("<h1 style='text-align: center; color: #188038; margin-bottom: 5px;'>✨ App da Sandra</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #666; font-size: 16px; margin-bottom: 30px;'>Organização e qualidade para deixar tudo impecável!</p>", unsafe_allow_html=True)
 
-# Invertendo a ordem das abas aqui
+# Abas
 tab_imovel, tab_rotina = st.tabs(["🏢 Ficha do Imóvel", "📅 Solicitação de Limpeza"])
 
-# --- ABA 1: FICHA DO IMÓVEL (AGORA É A PRIMEIRA) ---
+# --- ABA 1: FICHA DO IMÓVEL ---
 with tab_imovel:
     st.info("Olá! Para eu deixar tudo impecável e seguir exatamente o seu padrão de qualidade (e não te incomodar com perguntas bem na hora da limpeza), preparei este checklist rápido. Respondendo isso uma única vez, eu salvo no meu sistema e sigo sempre o seu jeito! Quando puder, me confirma? 🥰✨")
     
@@ -293,18 +299,29 @@ with tab_imovel:
         i_geladeira = st.text_input("Se tiver sobrado comida ou bebida dos hóspedes anteriores na geladeira, o que eu faço? Jogo tudo fora ou mantenho o que estiver fechado/lacrado? 🧊")
         i_louca = st.text_input("E se deixarem louça suja na pia: eu lavo (e já está incluso no meu serviço) ou você prefere anotar para cobrar uma taxa extra deles?")
         
+        st.markdown("<br>Quais eletrodomésticos e equipamentos ficam disponíveis na cozinha para os hóspedes (e que vão precisar da minha atenção na limpeza)? Pode marcar tudo o que tiver na casa: 🍳", unsafe_allow_html=True)
+        
         opcoes_cozinha = [
             "Fogão tradicional", "Cooktop", "Forno (elétrico ou a gás)", "Micro-ondas", 
-            "Airfryer", "Panela elétrica de arroz", "Panela de pressão elétrica (feijão/carnes)", 
-            "Filtro / Purificador de água", "Coifa / Depurador / Exaustor de gordura", 
-            "Sanduicheira / Grill", "Liquidificador", "Cafeteira (tradicional ou de cápsula)", 
-            "Torradeira", "Chaleira elétrica", "Batedeira", "Lava-louças", "Outros"
+            "Airfryer", "Panela elétrica de arroz", "Panela de pressão elétrica", 
+            "Filtro / Purificador de água", "Coifa / Depurador / Exaustor", 
+            "Sanduicheira / Grill", "Liquidificador", "Cafeteira", 
+            "Torradeira", "Chaleira elétrica", "Batedeira", "Lava-louças"
         ]
-        i_eletros = st.multiselect("Quais eletrodomésticos e equipamentos ficam disponíveis na cozinha para os hóspedes (e que vão precisar da minha atenção na limpeza)? Pode marcar tudo o que tiver na casa: 🍳", opcoes_cozinha)
         
-        i_eletros_outros = ""
-        if "Outros" in i_eletros:
-            i_eletros_outros = st.text_input("Quais outros equipamentos tem na cozinha?")
+        # Criação de colunas para organizar os checkboxes
+        col1, col2 = st.columns(2)
+        eletros_selecionados = {}
+        
+        for i, opcao in enumerate(opcoes_cozinha):
+            if i % 2 == 0:
+                with col1:
+                    eletros_selecionados[opcao] = st.checkbox(opcao)
+            else:
+                with col2:
+                    eletros_selecionados[opcao] = st.checkbox(opcao)
+                    
+        i_eletros_outros = st.text_input("Tem outros equipamentos na cozinha? Se sim, escreva aqui (Ex: Espremedor de laranjas, Nespresso...):")
             
         i_quantitativos = st.text_input("Para a gente manter o controle: você deixa um número exato de pratos, copos e talheres (facas, garfos, colheres de sopa e de sobremesa)? Se sim, me passa as quantidades para eu conferir na hora da limpeza e te avisar se faltar algo! 🍽️")
         i_cozinha = st.text_input("Tem mais algum detalhe na cozinha que eu deva deixar para os hóspedes (sal, açucar) ou algo que queira me contar?")
@@ -319,11 +336,18 @@ with tab_imovel:
         btn_imovel = st.form_submit_button("💾 Gerar Ficha Protegida")
         
     if btn_imovel:
-        # Lógica para formatar os eletrodomésticos para a imagem
-        eletros_selecionados = [e for e in i_eletros if e != "Outros"]
-        str_eletros = ", ".join(eletros_selecionados)
+        # Montar a string da tabela de eletrodomésticos para a imagem
+        lista_eletros_texto = []
+        for opcao, marcado in eletros_selecionados.items():
+            marca = "[ X ]" if marcado else "[   ]"
+            lista_eletros_texto.append(f"{marca} {opcao}")
+            
         if i_eletros_outros:
-            str_eletros += f", {i_eletros_outros}" if str_eletros else i_eletros_outros
+            lista_eletros_texto.append(f"[ X ] Outros: {i_eletros_outros}")
+        else:
+            lista_eletros_texto.append("[   ] Outros")
+            
+        str_eletros = "\n".join(lista_eletros_texto)
             
         payload_imovel = {
             "nome_prop": i_prop,
@@ -356,9 +380,9 @@ with tab_imovel:
                 ("🍽️ COZINHA E GELADEIRA", [
                     ("Sobras na Geladeira", i_geladeira),
                     ("Louça Suja", i_louca),
-                    ("Eletrodomésticos", str_eletros if str_eletros else "Nenhum informado"),
                     ("Quantitativo de Louça", i_quantitativos),
-                    ("Atenção Especial", i_cozinha)
+                    ("Atenção Especial", i_cozinha),
+                    ("Tabela de Eletrodomésticos", str_eletros)
                 ]),
                 ("✨ FINALIZAÇÃO E DETALHES", [
                     ("Local dos Mimos", i_mimos_guardados),
@@ -376,11 +400,15 @@ with tab_imovel:
         msg_fch = f"Ficha Técnica Atualizada: {i_prop}. Muito obrigada por preencher!"
         injetar_botao_compartilhar(img_fch, msg_fch, f"Ficha_{i_prop}.png")
 
-# --- ABA 2: SOLICITAÇÃO DE LIMPEZA (AGORA É A SEGUNDA) ---
+# --- ABA 2: SOLICITAÇÃO DE LIMPEZA ---
 with tab_rotina:
     st.markdown("### 🗓️ Visão Geral da Agenda")
-    cal_url = "https://calendar.google.com/calendar/embed?src=sandramjo26%40gmail.com&mode=AGENDA"
-    components.iframe(cal_url, height=350, scrolling=True)
+    # Texto instrucional adicionado
+    st.markdown("<p style='text-align: center; color: #555; font-size: 15px; margin-bottom: 10px; background-color: #E8F5E9; padding: 10px; border-radius: 8px;'>Para verificar outras semanas ou datas, clique nas setinhas para <strong>&lt; (esquerda)</strong> ou <strong>&gt; (direita)</strong> na parte superior do calendário abaixo.</p>", unsafe_allow_html=True)
+    
+    # Calendário atualizado para modo SEMANAL (WEEK) e altura maior (650)
+    cal_url = "https://calendar.google.com/calendar/embed?src=sandramjo26%40gmail.com&mode=WEEK"
+    components.iframe(cal_url, height=650, scrolling=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
     
