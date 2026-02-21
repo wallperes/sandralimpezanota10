@@ -539,6 +539,16 @@ with tab_rotina:
         q_data = st.date_input("Qual é a data gostaria de reservar? 🗓️✅", date.today())
         
         st.write("")
+        st.markdown("### ⏰ Horários e Check-in")
+        st.info("💡 **Aviso:** É desejável dispor de 3 horas para uma limpeza com o nosso padrão de qualidade, sem apuros de tempo e imprevistos. No entanto, é possível realizar o serviço em 2 horas caso seja necessário.")
+        
+        q_horario_label = "Qual o horário desejado para a limpeza? ⏰"
+        q_horario = st.text_input(f"{q_horario_label} (Ex: das 11h às 14h)")
+        
+        q_checkin_label = "Entrarão novos hóspedes no mesmo dia dessa solicitação de limpeza? 🚪"
+        q_checkin = st.radio(q_checkin_label, ["Sim, entram no mesmo dia", "Não, o apartamento ficará vazio"])
+        
+        st.write("")
         st.markdown("### 🔑 Acesso")
         q_acesso = st.text_area("Como vai ser a minha entrada no dia dessa limpeza? 🔑 (Chave na portaria, senha na porta, cofre...) e se for senha, qual a senha?")
         
@@ -559,10 +569,12 @@ with tab_rotina:
         payload = {
             "data_limpeza": dt_str,
             "categorias": [
-                ("📋 INFORMAÇÕES GERAIS", [
+                ("📋 INFORMAÇÕES GERAIS E HORÁRIOS", [
                     ("Me tira uma dúvida rápida: a gente já fez a Ficha Técnica desse seu imóvel antes, ou é a nossa primeira vez lá? 📝", q_cadastro),
                     ("Ah, maravilha! Então me lembra só qual é a Torre e o número do apartamento para eu puxar o seu padrão de qualidade aqui? 🏢🚪", q_ident),
                     ("Qual é a data gostaria de reservar? 🗓️✅", dt_str),
+                    (q_horario_label, q_horario),
+                    (q_checkin_label, q_checkin),
                     ("Quantas pessoas entram nessa reserva? 👥", q_hospedes)
                 ]),
                 ("🔑 ACESSO E SEGURANÇA", [
