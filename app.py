@@ -290,7 +290,7 @@ def criar_imagem_profissional(dados, tipo):
     margin_wm = 50
     txt_img = Image.new('RGBA', (wm_w + margin_wm * 2, wm_h + margin_wm * 2), (255, 255, 255, 0))
     txt_draw = ImageDraw.Draw(txt_img)
-    txt_draw.multiline_text((margin_wm, margin_wm), texto_wm, font=font_watermark, fill=(150, 150, 150, 50), align='center')
+    txt_draw.multiline_text((margin_wm, margin_wm), texto_wm, font=font_watermark, fill=(150, 150, 150, 120), align='center')
     
     # 4.3. Rotaciona apenas a etiqueta pequena
     txt_rotated = txt_img.rotate(30, resample=Image.BICUBIC, expand=True)
