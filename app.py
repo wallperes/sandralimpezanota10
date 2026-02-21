@@ -17,14 +17,11 @@ if "cidade_uf_input" not in st.session_state: st.session_state.cidade_uf_input =
 
 # --- FUNÇÃO DE BUSCA DO CEP ---
 def buscar_cep():
-    # Pega o que foi digitado e limpa traços, pontos e ESPAÇOS
     cep_bruto = st.session_state.cep_input
     cep_limpo = cep_bruto.replace("-", "").replace(".", "").replace(" ", "").strip()
     
-    # Atualiza a caixinha na tela para mostrar o CEP limpo
     st.session_state.cep_input = cep_limpo
     
-    # Valida se sobraram exatamente 8 números (Padrão de CEP Brasileiro)
     if len(cep_limpo) == 8 and cep_limpo.isdigit():
         try:
             response = requests.get(f"https://viacep.com.br/ws/{cep_limpo}/json/", timeout=5)
@@ -39,101 +36,73 @@ def buscar_cep():
 # --- ESTILOS VISUAIS ---
 st.markdown("""
     <style>
-    .stApp {
-        background-color: #F4F7F6;
-        font-family: 'Inter', 'Helvetica Neue', sans-serif;
-    }
-    
-    div[data-testid="stWidgetLabel"] p, 
-    div[data-testid="stWidgetLabel"] span,
-    .stMarkdown p,
-    .stText,
-    h1, h2, h3, label {
-        color: #2b2b2b !important;
-    }
-
-    button[data-baseweb="tab"] p, button[data-baseweb="tab"] span, button[data-baseweb="tab"] div {
-        color: #666666 !important;
-    }
-    button[data-baseweb="tab"][aria-selected="true"] p, 
-    button[data-baseweb="tab"][aria-selected="true"] span, 
-    button[data-baseweb="tab"][aria-selected="true"] div {
-        color: #188038 !important; 
-        font-weight: bold !important;
-    }
-
-    div[role="radiogroup"] p, 
-    div[role="radiogroup"] span, 
-    div[role="radiogroup"] div,
-    label[data-baseweb="radio"] div {
-        color: #2b2b2b !important;
-    }
-
-    [data-testid="stForm"] {
-        background-color: #FFFFFF !important;
-        border-radius: 20px;
-        padding: 30px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
-        border: 1px solid #f0f0f0;
-    }
-
-    .stButton>button { 
-        width: 100%; 
-        border-radius: 12px; 
-        height: 3.5em; 
-        font-weight: bold; 
-        font-size: 16px;
-        color: #FFFFFF !important; 
-        background: linear-gradient(135deg, #34A853 0%, #188038 100%);
-        border: none;
-        box-shadow: 0 4px 10px rgba(24, 128, 56, 0.2);
-        transition: all 0.3s ease; 
-    }
-    .stButton>button:hover { 
-        transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(24, 128, 56, 0.3);
-    }
-    .stButton>button p, .stButton>button span {
-        color: #FFFFFF !important;
-    }
-
-    .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stDateInput>div>div>input {
-        border-radius: 10px !important;
-        border: 1px solid #E0E0E0 !important;
-        background-color: #FAFAFA !important;
-        padding: 12px !important;
-        font-size: 15px !important;
-        color: #2b2b2b !important; 
-    }
-    .stTextInput>div>div>input:focus, .stTextArea>div>div>textarea:focus {
-        border-color: #34A853 !important;
-        box-shadow: 0 0 0 2px rgba(52, 168, 83, 0.2) !important;
-    }
-
-    [data-baseweb="tab-list"] {
-        background-color: #ffffff;
-        border-radius: 12px;
-        padding: 5px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-        gap: 10px;
-    }
-    [data-baseweb="tab"] {
-        border-radius: 8px !important;
-        padding: 10px 20px !important;
-        background-color: transparent !important;
-    }
-    [data-baseweb="tab"][aria-selected="true"] {
-        background-color: #E8F5E9 !important;
-    }
+    .stApp { background-color: #F4F7F6; font-family: 'Inter', 'Helvetica Neue', sans-serif; }
+    div[data-testid="stWidgetLabel"] p, div[data-testid="stWidgetLabel"] span,
+    .stMarkdown p, .stText, h1, h2, h3, label { color: #2b2b2b !important; }
+    button[data-baseweb="tab"] p, button[data-baseweb="tab"] span, button[data-baseweb="tab"] div { color: #666666 !important; }
+    button[data-baseweb="tab"][aria-selected="true"] p, button[data-baseweb="tab"][aria-selected="true"] span, 
+    button[data-baseweb="tab"][aria-selected="true"] div { color: #188038 !important; font-weight: bold !important; }
+    div[role="radiogroup"] p, div[role="radiogroup"] span, div[role="radiogroup"] div,
+    label[data-baseweb="radio"] div { color: #2b2b2b !important; }
+    [data-testid="stForm"] { background-color: #FFFFFF !important; border-radius: 20px; padding: 30px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04); border: 1px solid #f0f0f0; }
+    .stButton>button { width: 100%; border-radius: 12px; height: 3.5em; font-weight: bold; font-size: 16px; color: #FFFFFF !important; background: linear-gradient(135deg, #34A853 0%, #188038 100%); border: none; box-shadow: 0 4px 10px rgba(24, 128, 56, 0.2); transition: all 0.3s ease; }
+    .stButton>button:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(24, 128, 56, 0.3); }
+    .stButton>button p, .stButton>button span { color: #FFFFFF !important; }
+    .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stDateInput>div>div>input { border-radius: 10px !important; border: 1px solid #E0E0E0 !important; background-color: #FAFAFA !important; padding: 12px !important; font-size: 15px !important; color: #2b2b2b !important; }
+    .stTextInput>div>div>input:focus, .stTextArea>div>div>textarea:focus { border-color: #34A853 !important; box-shadow: 0 0 0 2px rgba(52, 168, 83, 0.2) !important; }
+    [data-baseweb="tab-list"] { background-color: #ffffff; border-radius: 12px; padding: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); gap: 10px; }
+    [data-baseweb="tab"] { border-radius: 8px !important; padding: 10px 20px !important; background-color: transparent !important; }
+    [data-baseweb="tab"][aria-selected="true"] { background-color: #E8F5E9 !important; }
     </style>
     """, unsafe_allow_html=True)
+
+# ==============================================================================
+# NOVA FUNÇÃO: QUEBRA DE TEXTO BASEADA EM PIXELS E NÃO EM CARACTERES
+# ==============================================================================
+def quebrar_texto_por_pixels(texto, fonte, largura_maxima, draw):
+    linhas_finais = []
+    # Quebra primeiro pelos 'Enters' normais que o usuário deu no campo de texto
+    for paragrafo in str(texto).split('\n'):
+        if not paragrafo.strip():
+            linhas_finais.append("")
+            continue
+            
+        palavras = paragrafo.split()
+        if not palavras:
+            continue
+            
+        linha_atual = palavras[0]
+        
+        for palavra in palavras[1:]:
+            linha_teste = f"{linha_atual} {palavra}"
+            
+            # Mede a largura real em pixels da tentativa
+            try:
+                # Método seguro e moderno do Pillow
+                w = draw.textlength(linha_teste, font=fonte)
+            except AttributeError:
+                try:
+                    w = draw.textbbox((0, 0), linha_teste, font=fonte)[2]
+                except AttributeError:
+                    w = draw.textsize(linha_teste, font=fonte)[0]
+            
+            # Se couber na margem, aceita a palavra na linha. Se não, joga pra baixo.
+            if w <= largura_maxima:
+                linha_atual = linha_teste
+            else:
+                linhas_finais.append(linha_atual)
+                linha_atual = palavra
+                
+        linhas_finais.append(linha_atual)
+    return linhas_finais
 
 # ==============================================================================
 # FUNÇÃO: GERAÇÃO TÉCNICA DE IMAGEM
 # ==============================================================================
 def criar_imagem_profissional(dados, tipo):
     width = 850
-    height = 4200 if tipo == "imovel" else 1800 
+    # Aumentado o limite do canvas para evitar cortes. O excesso é removido no crop final.
+    height = 8000 
     
     image = Image.new("RGBA", (width, height), "white")
     draw = ImageDraw.Draw(image)
@@ -142,7 +111,7 @@ def criar_imagem_profissional(dados, tipo):
         font_alert = ImageFont.truetype("DejaVuSans-Bold.ttf", 22)
         font_watermark = ImageFont.truetype("DejaVuSans-Bold.ttf", 55)
         font_title = ImageFont.truetype("DejaVuSans-Bold.ttf", 45)
-        font_header = ImageFont.truetype("DejaVuSans-Bold.ttf", 22)
+        font_header = ImageFont.truetype("DejaVuSans-Bold.ttf", 20) # Reduzido levemente para caber melhor as perguntas
         font_text = ImageFont.truetype("DejaVuSans.ttf", 20)
     except:
         font_alert = font_watermark = font_title = font_header = font_text = ImageFont.load_default()
@@ -167,31 +136,48 @@ def criar_imagem_profissional(dados, tipo):
         cor_topo, titulo = "#188038", "ORDEM DE SERVIÇO OPERACIONAL"
         subtitulo = f"Cronograma: {dados.get('data_limpeza', '-')}"
 
+    # O topo com título azul/verde também precisa tratar o tamanho do subtítulo (para não vazar)
     draw.rectangle([(0, offset_y), (width, 160 + offset_y)], fill=cor_topo)
     draw.text((45, 45 + offset_y), titulo, font=font_title, fill="white")
-    draw.text((45, 105 + offset_y), subtitulo, font=font_text, fill="#e1f5fe")
+    
+    sub_linhas = quebrar_texto_por_pixels(subtitulo, font_text, width - 90, draw)
+    sub_y = 105 + offset_y
+    for s_linha in sub_linhas:
+        draw.text((45, sub_y), s_linha, font=font_text, fill="#e1f5fe")
+        sub_y += 25
 
     y_pos, margin = 200 + offset_y, 45
+    largura_maxima_texto = width - (margin * 2)
 
     for categoria, campos in dados.get("categorias", []):
         draw.text((margin, y_pos), categoria, font=font_header, fill=cor_topo)
         y_pos += 40
-        for rotulo, valor in campos:
-            val_str = str(valor) if valor else "Não informado"
-            draw.text((margin, y_pos), f"{rotulo}:", font=font_header, fill="#424242")
-            y_pos += 30
+        
+        for pergunta, resposta in campos:
+            val_str = str(resposta).strip()
+            if not val_str:
+                val_str = "Não informado"
+                
+            # 1. Escreve a Pergunta (Quebrada por Pixels)
+            linhas_pergunta = quebrar_texto_por_pixels(f"Pergunta: {pergunta}", font_header, largura_maxima_texto, draw)
+            for linha in linhas_pergunta:
+                draw.text((margin, y_pos), linha, font=font_header, fill="#424242")
+                y_pos += 25 # Espaçamento da pergunta
+                
+            y_pos += 5 # Respiro entre pergunta e resposta
             
-            for paragrafo in val_str.split('\n'):
-                linhas_wrap = textwrap.wrap(paragrafo, width=80) if paragrafo.strip() else [""]
-                for linha in linhas_wrap:
-                    draw.text((margin, y_pos), linha, font=font_text, fill="#757575")
-                    y_pos += 25
+            # 2. Escreve a Resposta (Quebrada por Pixels)
+            linhas_resposta = quebrar_texto_por_pixels(f"👉 Resposta: {val_str}", font_text, largura_maxima_texto, draw)
+            for linha in linhas_resposta:
+                draw.text((margin, y_pos), linha, font=font_text, fill="#188038") # Cor destacada para a resposta
+                y_pos += 25
             
-            y_pos += 15
+            y_pos += 25 # Espaçamento extra para o próximo campo
+            
         draw.line([(margin, y_pos), (width-margin, y_pos)], fill="#eeeeee", width=2)
         y_pos += 25
 
-    draw.text((margin, height-60), "Documento Gerado por Ecossistema Digital de Limpeza", font=font_text, fill="#bdbdbd")
+    draw.text((margin, y_pos + 20), "Documento Gerado por Ecossistema Digital de Limpeza", font=font_text, fill="#bdbdbd")
 
     texto_wm = "ENVIAR PARA SANDRA\n(21) 96929-3505"
     watermark_img = Image.new('RGBA', (width, height), (255, 255, 255, 0))
@@ -209,7 +195,9 @@ def criar_imagem_profissional(dados, tipo):
     
     rotacionada = watermark_img.rotate(30, resample=Image.BICUBIC)
     image = Image.alpha_composite(image, rotacionada)
-    image = image.crop((0, 0, width, min(y_pos + 100, height)))
+    
+    # Corta exatamente onde as respostas terminaram
+    image = image.crop((0, 0, width, y_pos + 80))
     
     return image.convert("RGB")
 
@@ -277,7 +265,6 @@ def injetar_botao_compartilhar(img, texto_corpo, nome_arquivo="ordem_servico.png
 st.markdown("<h1 style='text-align: center; color: #188038; margin-bottom: 5px;'>✨ App da Sandra</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #666; font-size: 16px; margin-bottom: 30px;'>Organização e qualidade para deixar tudo impecável!</p>", unsafe_allow_html=True)
 
-# Abas
 tab_imovel, tab_rotina = st.tabs(["🏢 Ficha do Imóvel", "📅 Solicitação de Limpeza"])
 
 # --- ABA 1: FICHA DO IMÓVEL ---
@@ -389,7 +376,6 @@ with tab_imovel:
         if i_bairro: endereco_final += f" - {i_bairro}"
         if i_cidade_uf: endereco_final += f", {i_cidade_uf}"
         
-        # O CEP formatado que será impresso na imagem final
         cep_display = st.session_state.cep_input
         if cep_display: endereco_final += f" (CEP: {cep_display})"
             
@@ -397,38 +383,38 @@ with tab_imovel:
             "nome_prop": i_prop,
             "categorias": [
                 ("📍 IDENTIFICAÇÃO DO IMÓVEL", [
-                    ("Responsável", i_prop),
+                    ("Qual o nome do proprietário ou responsável por esse imóvel? 👤", i_prop),
                     ("Endereço Completo", endereco_final),
-                    ("Condomínio", i_cond)
+                    ("Qual é o nome do Edifício ou Condomínio? 🏢", i_cond)
                 ]),
                 ("🧹 EQUIPAMENTOS, CLIMATIZAÇÃO E MATERIAIS", [
-                    ("Aspirador/Voltagem", i_aspirador),
-                    ("Materiais Básicos", i_materiais),
-                    ("Produtos de Limpeza", i_produtos),
-                    ("PRODUTOS PROIBIDOS", i_proibido),
-                    ("Ventiladores", i_ventiladores)
+                    ("Aí no apartamento tem um aspirador de pó funcionando direitinho? Ah, e a voltagem das tomadas é 110v ou 220v? 🔌", i_aspirador),
+                    ("Posso contar com vassoura, rodo, balde, panos e escadinha aí no apto?", i_materiais),
+                    ("Sobre os produtos de limpeza: prefere que eu use o meu kit ou você fornece? Se você deixa os produtos, há alguma instrução especial de como gosta que os use?", i_produtos),
+                    ("Isso é muito importante: tem algum produto que é PROIBIDO ou que não queira que seja usado nos pisos, nas bancadas ou nos móveis? 🚫", i_proibido),
+                    ("E sobre os ventiladores: tem ventilador de teto? Se sim, quantos? E de chão, tem algum? 🌬️", i_ventiladores)
                 ]),
                 ("🛏️ QUARTOS E ROUPA DE CAMA", [
-                    ("Local do Enxoval Limpo", i_guardar),
-                    ("Roupa Suja", i_suja),
-                    ("Montagem das Camas", i_montar)
+                    ("Onde você costuma guardar as roupas de cama e banho limpas? 🧺", i_guardar),
+                    ("Onde deixo a roupa suja que os hóspedes usaram?", i_suja),
+                    ("Como você prefere que eu monte as camas? Quantos travesseiros? Edredom? Lençol de elástico?", i_montar)
                 ]),
                 ("🚿 BANHEIROS E AMENITIES", [
-                    ("Sabonete/Shampoo", i_shampoo),
-                    ("Disposição das Toalhas", i_toalhas)
+                    ("Para o sabonete, shampoo e condicionador: você oferece? Quais oferece e onde ficam os itens de reposição? 🧴", i_shampoo),
+                    ("Onde você prefere que eu deixe as toalhas limpas? (Em cima da cama, no rack do banheiro...)", i_toalhas)
                 ]),
                 ("🍽️ COZINHA E GELADEIRA", [
-                    ("Sobras na Geladeira", i_geladeira),
-                    ("Louça Suja", i_louca),
-                    ("Quantitativo de Louça", i_quantitativos),
-                    ("Atenção Especial", i_cozinha),
-                    ("Tabela de Eletrodomésticos", str_eletros)
+                    ("Se tiver sobrado comida ou bebida dos hóspedes anteriores na geladeira, o que eu faço? Jogo tudo fora ou mantenho o que estiver fechado/lacrado? 🧊", i_geladeira),
+                    ("E se deixarem louça suja na pia: eu lavo ou você prefere anotar para cobrar uma taxa extra deles?", i_louca),
+                    ("Para a gente manter o controle: você deixa um número exato de pratos, copos e talheres? Se sim, me passa as quantidades:", i_quantitativos),
+                    ("Tem mais algum detalhe na cozinha que eu deva deixar para os hóspedes (sal, açucar) ou algo que queira me contar?", i_cozinha),
+                    ("Quais eletrodomésticos e equipamentos ficam disponíveis na cozinha para os hóspedes?", str_eletros)
                 ]),
                 ("✨ FINALIZAÇÃO E DETALHES", [
-                    ("Local dos Mimos", i_mimos_guardados),
-                    ("Clima/Ambiente Final", i_ambiente),
-                    ("Descarte de Lixo", i_lixo),
-                    ("Observações Finais", i_obs_finais)
+                    ("Se houver mimos de boas vindas, onde ficam guardados? 🍬", i_mimos_guardados),
+                    ("Ao terminar e fechar a porta, como devo deixar o ambiente? (Ex: cortinas abertas ou fechadas, luzes acessas ou apagadas?) 🌬️", i_ambiente),
+                    ("Onde eu faço o descarte final de todo o lixo aí no prédio? 🗑️", i_lixo),
+                    ("Para fecharmos: deseja acrescentar alguma observação importante ou detalhe sobre o apartamento que ainda não conversamos por aqui? 📝", i_obs_finais)
                 ])
             ]
         }
@@ -481,24 +467,24 @@ with tab_rotina:
             "data_limpeza": dt_str,
             "categorias": [
                 ("📋 INFORMAÇÕES GERAIS", [
-                    ("Status do Cadastro", q_cadastro),
-                    ("Identificação Rápida", q_ident),
-                    ("Data da Limpeza", dt_str),
-                    ("Qtd. Hóspedes", q_hospedes)
+                    ("Me tira uma dúvida rápida: a gente já fez a Ficha Técnica desse seu imóvel antes, ou é a nossa primeira vez lá? 📝", q_cadastro),
+                    ("Ah, maravilha! Então me lembra só qual é a Torre e o número do apartamento para eu puxar o seu padrão de qualidade aqui? 🏢🚪", q_ident),
+                    ("Qual é a data gostaria de reservar? 🗓️✅", dt_str),
+                    ("Quantas pessoas entram nessa reserva? 👥", q_hospedes)
                 ]),
                 ("🔑 ACESSO E SEGURANÇA", [
-                    ("Instruções de Entrada/Senha", q_acesso)
+                    ("Como vai ser a minha entrada no dia dessa limpeza? 🔑", q_acesso)
                 ]),
                 ("🧺 ENXOVAL E PREPARAÇÃO", [
-                    ("Enxoval de Banho", q_banho),
-                    ("Enxoval de Cama", q_cama)
+                    ("Quantas toalhas de banho e de rosto eu devo separar no total? 🛁", q_banho),
+                    ("Quantas camas eu preciso preparar dessa vez? E deixo quantos travesseiros e cobertores? 🛏️", q_cama)
                 ]),
                 ("🧴 AMENITIES E MIMOS", [
-                    ("Consumíveis", q_amenities),
-                    ("Mimos", q_mimos)
+                    ("Quantos rolos de papel higiênico, sabonetes e shampoos eu devo deixar no total? 🧻🧴", q_amenities),
+                    ("Tem algum 'mimo' especial para essa reserva (chocolates, biscoitos, cápsulas de café)? Quantos eu deixo preparados? 🍬", q_mimos)
                 ]),
                 ("⚠️ NOTAS ESPECIAIS", [
-                    ("Observações", q_notas)
+                    ("Deseja acrescentar alguma observação importante ou pedido especial para essa limpeza que ainda não conversamos?", q_notas)
                 ])
             ]
         }
