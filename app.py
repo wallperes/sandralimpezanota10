@@ -572,11 +572,11 @@ with tab_rotina:
         st.markdown("---")
         
         q_cadastro = st.radio("Me tira uma dúvida rápida: a gente já fez a Ficha Técnica desse seu imóvel antes, ou é a nossa primeira vez lá? 📝", ["Já fizemos a Ficha", "Primeira vez"])
-        q_ident = st.text_input("Ah, maravilha! Então me lembra só qual é a Torre e o número do apartamento para eu puxar o seu padrão de qualidade aqui? 🏢🚪 (Ex: Torre Formosa, Apto 509)")
+        q_ident = st.text_input("Ah, maravilha! Então me registre apenas qual para qual imóvel deseja a limpeza, me informando seu condomínio, torre e o número do apartamento 🏢🚪 (Ex: Torre Formosa, Apto 509)")
         q_data = st.date_input("Qual é a data gostaria de reservar? 🗓️✅", date.today(), format="DD/MM/YYYY")
         
         st.write("")
-        st.markdown("### ⏰ Horários e Check-in")
+        st.markdown("### ⏰ Horários")
         st.info("💡 **Aviso:** É desejável dispor de 3 horas para uma limpeza com o nosso padrão de qualidade, sem apuros de tempo e imprevistos. No entanto, é possível realizar o serviço em 2 horas caso seja necessário.")
         
         q_horario_label = "Qual o horário desejado para a limpeza? ⏰"
