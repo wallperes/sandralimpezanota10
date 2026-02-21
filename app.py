@@ -5,7 +5,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps
 import io
 import textwrap
 import base64
-import requests # Biblioteca para buscar o CEP na internet
+import requests 
 
 # --- CONFIGURAÇÕES DO AMBIENTE ---
 st.set_page_config(page_title="Gestão de Limpeza Automatizada", page_icon="✨", layout="centered")
@@ -17,10 +17,17 @@ if "cidade_uf_input" not in st.session_state: st.session_state.cidade_uf_input =
 
 # --- FUNÇÃO DE BUSCA DO CEP ---
 def buscar_cep():
-    cep = st.session_state.cep_input.replace("-", "").replace(".", "").strip()
-    if len(cep) == 8 and cep.isdigit():
+    # Pega o que foi digitado e limpa traços, pontos e ESPAÇOS
+    cep_bruto = st.session_state.cep_input
+    cep_limpo = cep_bruto.replace("-", "").replace(".", "").replace(" ", "").strip()
+    
+    # Atualiza a caixinha na tela para mostrar o CEP limpo
+    st.session_state.cep_input = cep_limpo
+    
+    # Valida se sobraram exatamente 8 números (Padrão de CEP Brasileiro)
+    if len(cep_limpo) == 8 and cep_limpo.isdigit():
         try:
-            response = requests.get(f"https://viacep.com.br/ws/{cep}/json/", timeout=5)
+            response = requests.get(f"https://viacep.com.br/ws/{cep_limpo}/json/", timeout=5)
             data = response.json()
             if "erro" not in data:
                 st.session_state.rua_input = data.get("logradouro", "")
@@ -29,7 +36,7 @@ def buscar_cep():
         except:
             pass 
 
-# --- ESTILOS VISUAIS (O "BANHO DE LOJA" BLINDADO) ---
+# --- ESTILOS VISUAIS ---
 st.markdown("""
     <style>
     .stApp {
@@ -126,7 +133,7 @@ st.markdown("""
 # ==============================================================================
 def criar_imagem_profissional(dados, tipo):
     width = 850
-    height = 4200 if tipo == "imovel" else 1800 # Aumentei um pouco a da rotina para caber a senha
+    height = 4200 if tipo == "imovel" else 1800 
     
     image = Image.new("RGBA", (width, height), "white")
     draw = ImageDraw.Draw(image)
@@ -275,17 +282,16 @@ tab_imovel, tab_rotina = st.tabs(["🏢 Ficha do Imóvel", "📅 Solicitação d
 
 # --- ABA 1: FICHA DO IMÓVEL ---
 with tab_imovel:
-    st.info("Olá! Para eu deixar tudo impecável e seguir exatamente o seu padrão de qualidade (e não te incomodar com perguntas bem na hora da limpeza), preparei este checklist rápido. Respondendo isso uma única vez, eu salvo no meu sistema e sigo sempre o seu jeito! Quando puder, me confirma? 🥰✨")
+    st.info("Olá! Para eu deixar tudo impecável e seguir exatamente o seu padrão de qualidade (e não te incomodar com perguntas bem na hora da limpeza), preparei este ficha de cadastro de imóvel. Sei que são várias perguntas, mas respondendo isso uma única vez, eu salvo no meu sistema e sigo sempre o seu jeito! Quando puder, me confirma? 🥰✨")
     
-    st.markdown("### 🔎 Busca Rápida de Endereço")
-    st.markdown("<div style='background-color: #E8F5E9; padding: 15px; border-radius: 10px; margin-bottom: 15px;'><span style='color: #188038; font-weight: bold;'>💡 Dica de Ouro:</span> Se você souber o CEP, digite apenas os números abaixo e <strong>pressione Enter no teclado</strong>. O endereço será preenchido automaticamente na ficha abaixo!</div>", unsafe_allow_html=True)
+    st.markdown("### 🔎 Cadastro do Imóvel - CEP")
+    st.markdown("<div style='background-color: #E8F5E9; padding: 15px; border-radius: 10px; margin-bottom: 15px;'><span style='color: #188038; font-weight: bold;'>💡 Dica de Ouro:</span> Caso não saiba o CEP, ignore esse campo. Porém, se você souber, digite apenas os números abaixo e <strong>pressione Enter ou clique fora da caixa</strong> para que o endereço seja preenchido automaticamente na ficha abaixo!</div>", unsafe_allow_html=True)
     
-    i_cep = st.text_input("Digite o CEP e aperte Enter:", key="cep_input", on_change=buscar_cep)
+    i_cep = st.text_input("Digite o CEP:", key="cep_input", on_change=buscar_cep)
     
     with st.form("form_imovel"):
         st.markdown("### 📍 1. Identificação do Imóvel")
-        i_prop = st.text_input("Para começar, qual o nome do proprietário ou responsável por esse imóvel? 👤")
-        
+              
         i_rua = st.text_input("Logradouro (Rua, Avenida, etc.)", key="rua_input")
         
         col_end1, col_end2 = st.columns(2)
@@ -302,9 +308,9 @@ with tab_imovel:
             i_comp = st.text_input("Complemento (Casa, Apto, Bloco...)")
 
         i_cond = st.text_input("Qual é o nome do Edifício ou Condomínio? 🏢 (Ex: Rio Wonder)")
-        i_apto = st.text_input("Qual é a Torre ou Bloco, e o número do apartamento? 🏗️🚪")
+        i_prop = st.text_input("Qual o nome do proprietário ou responsável por esse imóvel? 👤")
         
-        st.write("") # Pulo de linha limpo
+        st.write("") 
         st.markdown("### 🧹 2. Equipamentos, Climatização e Materiais")
         i_aspirador = st.text_input("Aí no apartamento tem um aspirador de pó funcionando direitinho? Ah, e a voltagem das tomadas é 110v ou 220v? 🔌")
         i_materiais = st.text_input("Posso contar com vassoura, rodo, balde, panos e escadinha aí no apto?")
@@ -382,7 +388,10 @@ with tab_imovel:
         if i_comp: endereco_final += f" - {i_comp}"
         if i_bairro: endereco_final += f" - {i_bairro}"
         if i_cidade_uf: endereco_final += f", {i_cidade_uf}"
-        if i_cep: endereco_final += f" (CEP: {i_cep})"
+        
+        # O CEP formatado que será impresso na imagem final
+        cep_display = st.session_state.cep_input
+        if cep_display: endereco_final += f" (CEP: {cep_display})"
             
         payload_imovel = {
             "nome_prop": i_prop,
@@ -390,8 +399,7 @@ with tab_imovel:
                 ("📍 IDENTIFICAÇÃO DO IMÓVEL", [
                     ("Responsável", i_prop),
                     ("Endereço Completo", endereco_final),
-                    ("Condomínio", i_cond),
-                    ("Torre/Apto", i_apto)
+                    ("Condomínio", i_cond)
                 ]),
                 ("🧹 EQUIPAMENTOS, CLIMATIZAÇÃO E MATERIAIS", [
                     ("Aspirador/Voltagem", i_aspirador),
