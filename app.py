@@ -567,8 +567,8 @@ with tab_rotina:
     st.markdown("<br>", unsafe_allow_html=True)
     
     with st.form("form_rotina"):
-        st.markdown("### 📝 Nova Solicitação de Serviço")
-        st.write("Solicite limpezas abaixo")
+        st.markdown("### 📝 Nova Solicitação de Limpeza")
+        st.write("Para solicitar um serviço de limpeza, preencha a ficha abaixo e me envie")
         st.markdown("---")
         
         q_cadastro = st.radio("Me tira uma dúvida rápida: a gente já fez a Ficha Técnica desse seu imóvel antes, ou é a nossa primeira vez lá? 📝", ["Já fizemos a Ficha", "Primeira vez"])
