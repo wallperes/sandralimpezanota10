@@ -133,7 +133,6 @@ st.markdown("""
 # ==============================================================================
 def quebrar_texto_por_pixels(texto, fonte, largura_maxima, draw):
     linhas_finais = []
-    # Quebra primeiro pelos 'Enters' normais que o usuário deu no campo de texto
     for paragrafo in str(texto).split('\n'):
         if not paragrafo.strip():
             linhas_finais.append("")
@@ -148,7 +147,6 @@ def quebrar_texto_por_pixels(texto, fonte, largura_maxima, draw):
         for palavra in palavras[1:]:
             linha_teste = f"{linha_atual} {palavra}"
             
-            # Mede a largura real em pixels da tentativa
             try:
                 w = draw.textlength(linha_teste, font=fonte)
             except AttributeError:
@@ -157,7 +155,6 @@ def quebrar_texto_por_pixels(texto, fonte, largura_maxima, draw):
                 except AttributeError:
                     w = draw.textsize(linha_teste, font=fonte)[0]
             
-            # Se couber na margem, aceita a palavra na linha. Se não, joga pra baixo.
             if w <= largura_maxima:
                 linha_atual = linha_teste
             else:
@@ -172,7 +169,6 @@ def quebrar_texto_por_pixels(texto, fonte, largura_maxima, draw):
 # ==============================================================================
 def criar_imagem_profissional(dados, tipo):
     width = 850
-    # Aumentado o limite do canvas para evitar cortes. O excesso é removido no crop final.
     height = 8000 
     
     image = Image.new("RGBA", (width, height), "white")
@@ -191,7 +187,6 @@ def criar_imagem_profissional(dados, tipo):
     texto_alerta = "🚨 DOCUMENTO VÁLIDO APENAS SE ENVIADO PARA SANDRA: (21) 96929-3505"
     linhas_alerta = quebrar_texto_por_pixels(texto_alerta, font_alert, width - 40, draw)
     
-    # Altura dinâmica baseada na quantidade de linhas que o alerta ocupar
     altura_alerta = max(50, len(linhas_alerta) * 30 + 20)
     draw.rectangle([(0, 0), (width, altura_alerta)], fill="#d32f2f")
     
@@ -218,17 +213,14 @@ def criar_imagem_profissional(dados, tipo):
         cor_topo, titulo_texto = "#188038", "ORDEM DE SERVIÇO OPERACIONAL"
         subtitulo = f"Cronograma: {dados.get('data_limpeza', '-')}"
 
-    # Fundo do cabeçalho
     draw.rectangle([(0, offset_y), (width, 160 + offset_y)], fill=cor_topo)
     
-    # Quebra do Título
     linhas_titulo = quebrar_texto_por_pixels(titulo_texto, font_title, width - 90, draw)
     y_titulo = 30 + offset_y
     for linha in linhas_titulo:
-        draw.text((45, y_titulo), linha, font=font_title, fill="white")
+        draw.text((45, y_titulo), linha, font_title, fill="white")
         y_titulo += 40
         
-    # Quebra do Subtítulo 
     sub_linhas = quebrar_texto_por_pixels(subtitulo, font_text, width - 90, draw)
     sub_y = y_titulo + 10
     for s_linha in sub_linhas:
@@ -248,21 +240,19 @@ def criar_imagem_profissional(dados, tipo):
             if not val_str:
                 val_str = "Não informado"
                 
-            # Escreve a Pergunta 
             linhas_pergunta = quebrar_texto_por_pixels(str(pergunta), font_header, largura_maxima_texto, draw)
             for linha in linhas_pergunta:
                 draw.text((margin, y_pos), linha, font=font_header, fill="#424242")
                 y_pos += 25 
                 
-            y_pos += 5 # Respiro entre pergunta e resposta
+            y_pos += 5
             
-            # Escreve a Resposta 
             linhas_resposta = quebrar_texto_por_pixels(str(val_str), font_text, largura_maxima_texto, draw)
             for linha in linhas_resposta:
                 draw.text((margin, y_pos), linha, font=font_text, fill="#188038")
                 y_pos += 25
             
-            y_pos += 25 # Espaçamento extra para o próximo campo
+            y_pos += 25 
             
         draw.line([(margin, y_pos), (width-margin, y_pos)], fill="#eeeeee", width=2)
         y_pos += 25
@@ -270,12 +260,9 @@ def criar_imagem_profissional(dados, tipo):
     # --- 4. RODAPÉ E MARCA D'ÁGUA CENTRALIZADA ---
     draw.text((margin, y_pos + 20), "Documento Gerado por Ecossistema Digital de Limpeza", font=font_text, fill="#bdbdbd")
     
-    # Altura final real que a imagem vai ter após ser cortada
     final_height_needed = y_pos + 80
-
     texto_wm = "ENVIAR PARA SANDRA\n(21) 96929-3505"
     
-    # 4.1. Descobre o tamanho exato do texto da marca d'água
     dummy_img = Image.new('RGBA', (1, 1))
     dummy_draw = ImageDraw.Draw(dummy_img)
     try:
@@ -286,30 +273,23 @@ def criar_imagem_profissional(dados, tipo):
         wm_size = dummy_draw.textsize(texto_wm, font=font_watermark)
         wm_w, wm_h = int(wm_size[0]), int(wm_size[1])
 
-    # 4.2. Cria uma "etiqueta" individual só com a marca d'água (com uma margem para não cortar ao girar)
     margin_wm = 50
     txt_img = Image.new('RGBA', (wm_w + margin_wm * 2, wm_h + margin_wm * 2), (255, 255, 255, 0))
     txt_draw = ImageDraw.Draw(txt_img)
     txt_draw.multiline_text((margin_wm, margin_wm), texto_wm, font=font_watermark, fill=(150, 150, 150, 120), align='center')
     
-    # 4.3. Rotaciona apenas a etiqueta pequena
     txt_rotated = txt_img.rotate(30, resample=Image.BICUBIC, expand=True)
     rot_w, rot_h = txt_rotated.size
     
-    # 4.4. Carimba essa etiqueta girada de forma centralizada ao longo do documento
-    y_curr = 400 # Começa a carimbar a partir do pixel 400
-    spacing = 800 # Repete a cada 800 pixels de altura
+    y_curr = 400 
+    spacing = 800 
     
     while y_curr < final_height_needed:
-        # Calcula a posição X para ficar exatamente no meio do documento de 850px de largura
         paste_x = int((width - rot_w) / 2)
         paste_y = int(y_curr - (rot_h / 2))
-        
-        # Cola a etiqueta rotacionada na imagem principal
         image.alpha_composite(txt_rotated, dest=(paste_x, paste_y))
         y_curr += spacing
     
-    # Corta o espaço em branco excedente do final do canvas
     image = image.crop((0, 0, width, final_height_needed))
     
     return image.convert("RGB")
@@ -394,8 +374,6 @@ tab_imovel, tab_rotina = st.tabs(["🏢 Ficha do Imóvel", "📅 Solicitação d
 
 # --- ABA 1: FICHA DO IMÓVEL ---
 with tab_imovel:
-    # --- NOVA APRESENTAÇÃO PROFISSIONAL E INTIMISTA ---
-   
     st.markdown("### 🔎 Cadastro do Imóvel - Digite o CEP abaixo")
         
     i_cep = st.text_input("CEP", label_visibility="collapsed", key="cep_input", on_change=buscar_cep)
@@ -504,7 +482,6 @@ with tab_imovel:
         if i_bairro: endereco_final += f" - {i_bairro}"
         if i_cidade_uf: endereco_final += f", {i_cidade_uf}"
         
-        # O CEP formatado que será impresso na imagem final
         cep_display = st.session_state.cep_input
         if cep_display: endereco_final += f" (CEP: {cep_display})"
             
@@ -532,108 +509,3 @@ with tab_imovel:
                 ("🚿 BANHEIROS E AMENITIES", [
                     ("Para o sabonete, shampoo e condicionador: você oferece? Quais oferece e onde ficam os itens de reposição? 🧴", i_shampoo),
                     ("Onde você prefere que eu deixe as toalhas limpas? (Em cima da cama, no rack do banheiro...)", i_toalhas)
-                ]),
-                ("🍽️ COZINHA E GELADEIRA", [
-                    ("Se tiver sobrado comida ou bebida dos hóspedes anteriores na geladeira, o que eu faço? Jogo tudo fora ou mantenho o que estiver fechado/lacrado? 🧊", i_geladeira),
-                    ("E se deixarem louça suja na pia: eu lavo ou você prefere anotar para cobrar uma taxa extra deles?", i_louca),
-                    ("Para a gente manter o controle: você deixa um número exato de pratos, copos e talheres? Se sim, me passa as quantidades:", i_quantitativos),
-                    ("Tem mais algum detalhe na cozinha que eu deva deixar para os hóspedes (sal, açucar) ou algo que queira me contar?", i_cozinha),
-                    ("Quais eletrodomésticos e equipamentos ficam disponíveis na cozinha para os hóspedes?", str_eletros)
-                ]),
-                ("✨ FINALIZAÇÃO E DETALHES", [
-                    ("Se houver mimos de boas vindas, onde ficam guardados? 🍬", i_mimos_guardados),
-                    ("Ao terminar e fechar a porta, como devo deixar o ambiente? (Ex: cortinas abertas ou fechadas, luzes acessas ou apagadas?) 🌬️", i_ambiente),
-                    ("Onde eu faço o descarte final de todo o lixo aí no prédio? 🗑️", i_lixo),
-                    ("Para fecharmos: deseja acrescentar alguma observação importante ou detalhe sobre o apartamento que ainda não conversamos por aqui? 📝", i_obs_finais)
-                ])
-            ]
-        }
-
-        img_fch = criar_imagem_profissional(payload_imovel, "imovel")
-        st.markdown("### Documento Gerado com Sucesso! 🎉")
-        st.image(img_fch, use_container_width=True)
-        
-        msg_fch = f"Ficha Técnica Atualizada: {i_prop}. Muito obrigada por preencher!"
-        injetar_botao_compartilhar(img_fch, msg_fch, f"Ficha_{i_prop}.png")
-
-# --- ABA 2: SOLICITAÇÃO DE LIMPEZA ---
-with tab_rotina:
-    st.markdown("### 🗓️ Visão Geral da Minha Agenda de Limpeza")
-    st.markdown("<p style='text-align: center; color: #555; font-size: 15px; margin-bottom: 10px; background-color: #E8F5E9; padding: 10px; border-radius: 8px;'>Para verificar outras semanas ou datas, clique nas setinhas para <strong>&lt; (esquerda)</strong> ou <strong>&gt; (direita)</strong> na parte superior do calendário.</p>", unsafe_allow_html=True)
-    
-    cal_url = "https://calendar.google.com/calendar/embed?src=sandramjo26%40gmail.com&mode=WEEK"
-    components.iframe(cal_url, height=650, scrolling=True)
-
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    with st.form("form_rotina"):
-        st.markdown("### 📝 Nova Solicitação de Limpeza")
-        st.write("Para solicitar um serviço de limpeza, preencha a ficha abaixo e me envie")
-        st.markdown("---")
-        
-        q_cadastro = st.radio("Me tira uma dúvida rápida: a gente já fez a Ficha Técnica desse seu imóvel antes, ou é a nossa primeira vez lá? 📝", ["Já fizemos a Ficha", "Primeira vez"])
-        q_ident = st.text_input("Ah, maravilha! Então me registre apenas qual para qual imóvel deseja a limpeza, me informando seu condomínio, torre e o número do apartamento 🏢🚪 (Ex: Torre Formosa, Apto 509)")
-        q_data = st.date_input("Qual é a data gostaria de reservar? 🗓️✅", date.today(), format="DD/MM/YYYY")
-        
-        st.write("")
-        st.markdown("### ⏰ Horários")
-        st.info("💡 **Aviso:** É desejável dispor de 3 horas para uma limpeza com o nosso padrão de qualidade, sem apuros de tempo e imprevistos. No entanto, é possível realizar o serviço em 2 horas caso seja necessário.")
-        
-        q_horario_label = "Qual o horário desejado para a limpeza? ⏰"
-        q_horario = st.text_input(f"{q_horario_label} (Ex: das 11h às 14h)")
-        
-        q_checkin_label = "Entrarão novos hóspedes no mesmo dia dessa solicitação de limpeza? 🚪"
-        q_checkin = st.radio(q_checkin_label, ["Sim, entram no mesmo dia", "Não, o apartamento ficará vazio"])
-        
-        st.write("")
-        st.markdown("### 🔑 Acesso")
-        q_acesso = st.text_area("Como vai ser a minha entrada no dia dessa limpeza? 🔑 (Chave na portaria, senha na porta, cofre...) e se for senha, qual a senha?")
-        
-        st.write("")
-        st.markdown("### 📋 Informações da Reserva")
-        q_hospedes = st.text_input("Quantas pessoas entram nessa reserva? 👥 (Pergunto só para eu ter uma ideia do que será necessário preparar)")
-        q_banho = st.text_input("Quantas toalhas de banho e de rosto eu devo separar no total? 🛁")
-        q_cama = st.text_input("Quantas camas eu preciso preparar dessa vez? E deixo quantos travesseiros e cobertores? Peço que me fale tudo sobre as roupas de cama, incluindo se devo usar cobre leitos, edredoms, etc 🛏️")
-        q_amenities = st.text_input("Quantos rolos de papel higiênico, sabonetes e shampoos eu devo deixar no total? 🧻🧴")
-        q_mimos = st.text_input("Tem algum 'mimo' especial para essa reserva (chocolates, biscoitos, cápsulas de café)? Quantos eu deixo preparados? 🍬")
-        q_notas = st.text_area("Para fecharmos a solicitação: deseja acrescentar alguma observação importante ou pedido especial para essa limpeza que ainda não conversamos? Pode me falar que dependendo do que for eu tento verificar! 😉✨")
-        
-        st.markdown("<br>", unsafe_allow_html=True)
-        btn_gen = st.form_submit_button("🚀 Gerar Ordem de Serviço de Limpeza")
-    
-    if btn_gen:
-        dt_str = q_data.strftime("%d/%m/%Y")
-        payload = {
-            "data_limpeza": dt_str,
-            "categorias": [
-                ("📋 INFORMAÇÕES GERAIS E HORÁRIOS", [
-                    ("Me tira uma dúvida rápida: a gente já fez a Ficha Técnica desse seu imóvel antes, ou é a nossa primeira vez lá? 📝", q_cadastro),
-                    ("Ah, maravilha! Então me lembra só qual é a Torre e o número do apartamento para eu puxar o seu padrão de qualidade aqui? 🏢🚪", q_ident),
-                    ("Qual é a data gostaria de reservar? 🗓️✅", dt_str),
-                    (q_horario_label, q_horario),
-                    (q_checkin_label, q_checkin),
-                    ("Quantas pessoas entram nessa reserva? 👥", q_hospedes)
-                ]),
-                ("🔑 ACESSO E SEGURANÇA", [
-                    ("Como vai ser a minha entrada no dia dessa limpeza? 🔑", q_acesso)
-                ]),
-                ("🧺 ENXOVAL E PREPARAÇÃO", [
-                    ("Quantas toalhas de banho e de rosto eu devo separar no total? 🛁", q_banho),
-                    ("Quantas camas eu preciso preparar dessa vez? E deixo quantos travesseiros e cobertores? 🛏️", q_cama)
-                ]),
-                ("🧴 AMENITIES E MIMOS", [
-                    ("Quantos rolos de papel higiênico, sabonetes e shampoos eu devo deixar no total? 🧻🧴", q_amenities),
-                    ("Tem algum 'mimo' especial para essa reserva (chocolates, biscoitos, cápsulas de café)? Quantos eu deixo preparados? 🍬", q_mimos)
-                ]),
-                ("⚠️ NOTAS ESPECIAIS", [
-                    ("Deseja acrescentar alguma observação importante ou pedido especial para essa limpeza que ainda não conversamos?", q_notas)
-                ])
-            ]
-        }
-        
-        img_os = criar_imagem_profissional(payload, "rotina")
-        st.markdown("### Documento Gerado com Sucesso! 🎉")
-        st.image(img_os, use_container_width=True)
-        
-        msg_whatsapp = f"Olá! Segue a Ordem de Serviço confirmada para o dia {dt_str} no apto {q_ident}."
-        injetar_botao_compartilhar(img_os, msg_whatsapp, f"OS_{dt_str.replace('/','-')}.png")
