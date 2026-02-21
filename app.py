@@ -9,7 +9,7 @@ import base64
 # --- CONFIGURAÇÕES DO AMBIENTE ---
 st.set_page_config(page_title="Gestão de Limpeza Automatizada", page_icon="✨", layout="centered")
 
-# --- ESTILOS VISUAIS (O "BANHO DE LOJA" CORRIGIDO) ---
+# --- ESTILOS VISUAIS (O "BANHO DE LOJA" BLINDADO) ---
 st.markdown("""
     <style>
     /* Força um fundo claro na tela inteira */
@@ -18,14 +18,31 @@ st.markdown("""
         font-family: 'Inter', 'Helvetica Neue', sans-serif;
     }
     
-    /* 🔴 CORREÇÃO AQUI: Força TODOS os textos das perguntas a ficarem escuros! */
+    /* 🔴 FORÇA O TEXTO ESCURO EM TODOS OS RÓTULOS, PERGUNTAS E PARÁGRAFOS */
     div[data-testid="stWidgetLabel"] p, 
     div[data-testid="stWidgetLabel"] span,
-    div[data-baseweb="radio"] p,
-    div[data-baseweb="tab"] p,
     .stMarkdown p,
     .stText,
     h1, h2, h3, label {
+        color: #2b2b2b !important;
+    }
+
+    /* 🔴 CORREÇÃO: ABAS (TABS) SUPERIORES */
+    button[data-baseweb="tab"] p, button[data-baseweb="tab"] span, button[data-baseweb="tab"] div {
+        color: #666666 !important; /* Cor da aba inativa */
+    }
+    button[data-baseweb="tab"][aria-selected="true"] p, 
+    button[data-baseweb="tab"][aria-selected="true"] span, 
+    button[data-baseweb="tab"][aria-selected="true"] div {
+        color: #188038 !important; /* Cor da aba ativa (Verde) */
+        font-weight: bold !important;
+    }
+
+    /* 🔴 CORREÇÃO: MENUS DE SELEÇÃO E RADIO BUTTONS */
+    div[role="radiogroup"] p, 
+    div[role="radiogroup"] span, 
+    div[role="radiogroup"] div,
+    label[data-baseweb="radio"] div {
         color: #2b2b2b !important;
     }
 
@@ -38,7 +55,7 @@ st.markdown("""
         border: 1px solid #f0f0f0;
     }
 
-    /* Estiliza os botões principais (A letra do botão continua branca!) */
+    /* Estiliza os botões principais */
     .stButton>button { 
         width: 100%; 
         border-radius: 12px; 
@@ -74,7 +91,7 @@ st.markdown("""
         box-shadow: 0 0 0 2px rgba(52, 168, 83, 0.2) !important;
     }
 
-    /* Estiliza as Abas (Tabs) */
+    /* Estiliza o fundo das Abas */
     [data-baseweb="tab-list"] {
         background-color: #ffffff;
         border-radius: 12px;
@@ -89,10 +106,6 @@ st.markdown("""
     }
     [data-baseweb="tab"][aria-selected="true"] {
         background-color: #E8F5E9 !important;
-    }
-    [data-baseweb="tab"][aria-selected="true"] p {
-        color: #188038 !important;
-        font-weight: bold !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -314,11 +327,7 @@ with tab_imovel:
         i_apto = st.text_input("E para eu achar rapidinho: qual é a Torre ou Bloco, e o número do apartamento? 🏗️🚪")
         
         st.markdown("<br>### 🔑 2. Acesso e Segurança", unsafe_allow_html=True)
-        i_acesso = st.text_area("Como vai ser a minha entrada no dia da limpeza? 🔑 (Chave na portaria, senha na porta, cofre...)")
-        i_senhas = st.text_input("Quais são as senhas que vou precisar? (Da portaria, da porta principal...)")
-        i_cofre = st.text_input("Se a gente for usar um cofre de chaves (lockbox), qual é a senha e onde ele costuma ficar escondidinho? 🤫")
-        i_emerg = st.text_input("Sabe como é, né? Se a bateria da fechadura eletrônica acabar, tem alguma chave física de emergência? Onde ela fica? 😅")
-        i_alarme = st.text_input("O imóvel tem alarme? Se sim, me passa o código para eu desativar assim que entrar? 🚨")
+        i_acesso_unico = st.text_area("Como vai ser a minha entrada no dia da limpeza? 🔑 (Chave na portaria, senha na porta, cofre...) qual a senha?")
         
         st.markdown("<br>### 🧹 3. Equipamentos e Materiais", unsafe_allow_html=True)
         i_aspirador = st.text_input("Aí no apartamento tem um aspirador de pó funcionando direitinho? Ah, e a voltagem das tomadas é 110v ou 220v? 🔌")
@@ -359,11 +368,7 @@ with tab_imovel:
                     ("Torre/Apto", i_apto)
                 ]),
                 ("🔑 ACESSO E SEGURANÇA", [
-                    ("Entrada", i_acesso),
-                    ("Senhas", i_senhas),
-                    ("Lockbox", i_cofre),
-                    ("Chave de Emergência", i_emerg),
-                    ("Alarme", i_alarme)
+                    ("Acesso e Senhas", i_acesso_unico)
                 ]),
                 ("🧹 EQUIPAMENTOS E MATERIAIS", [
                     ("Aspirador/Voltagem", i_aspirador),
