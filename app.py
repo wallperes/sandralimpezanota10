@@ -267,47 +267,49 @@ def criar_imagem_profissional(dados, tipo):
         draw.line([(margin, y_pos), (width-margin, y_pos)], fill="#eeeeee", width=2)
         y_pos += 25
 
-    # --- 4. RODAPÉ E MARCA D'ÁGUA REPETIDA ---
+    # --- 4. RODAPÉ E MARCA D'ÁGUA CENTRALIZADA ---
     draw.text((margin, y_pos + 20), "Documento Gerado por Ecossistema Digital de Limpeza", font=font_text, fill="#bdbdbd")
     
-    # Altura final real do documento
+    # Altura final real que a imagem vai ter após ser cortada
     final_height_needed = y_pos + 80
 
     texto_wm = "ENVIAR PARA SANDRA\n(21) 96929-3505"
     
-    # Cria uma imagem transparente do tamanho total do canvas para desenhar as marcas
-    watermark_base = Image.new('RGBA', (width, height), (255, 255, 255, 0))
-    draw_wm = ImageDraw.Draw(watermark_base)
-    
+    # 4.1. Descobre o tamanho exato do texto da marca d'água
+    dummy_img = Image.new('RGBA', (1, 1))
+    dummy_draw = ImageDraw.Draw(dummy_img)
     try:
-        bbox_wm = draw_wm.multiline_textbbox((0, 0), texto_wm, font=font_watermark, align='center')
-        wm_w = bbox_wm[2] - bbox_wm[0]
-        wm_h = bbox_wm[3] - bbox_wm[1]
+        bbox_wm = dummy_draw.multiline_textbbox((0, 0), texto_wm, font=font_watermark, align='center')
+        wm_w = int(bbox_wm[2] - bbox_wm[0])
+        wm_h = int(bbox_wm[3] - bbox_wm[1])
     except AttributeError:
-        wm_w, wm_h = draw_wm.textsize(texto_wm, font=font_watermark)
-        
-    # Loop para repetir a marca d'água verticalmente
-    y_curr = 300 # Começa um pouco abaixo do topo
-    spacing = 800 # Espaçamento entre cada repetição da marca
+        wm_size = dummy_draw.textsize(texto_wm, font=font_watermark)
+        wm_w, wm_h = int(wm_size[0]), int(wm_size[1])
 
-    # Cor da marca d'água (cinza com transparência ajustada: 50)
-    wm_fill_color = (150, 150, 150, 50) 
-
+    # 4.2. Cria uma "etiqueta" individual só com a marca d'água (com uma margem para não cortar ao girar)
+    margin_wm = 50
+    txt_img = Image.new('RGBA', (wm_w + margin_wm * 2, wm_h + margin_wm * 2), (255, 255, 255, 0))
+    txt_draw = ImageDraw.Draw(txt_img)
+    txt_draw.multiline_text((margin_wm, margin_wm), texto_wm, font=font_watermark, fill=(150, 150, 150, 50), align='center')
+    
+    # 4.3. Rotaciona apenas a etiqueta pequena
+    txt_rotated = txt_img.rotate(30, resample=Image.BICUBIC, expand=True)
+    rot_w, rot_h = txt_rotated.size
+    
+    # 4.4. Carimba essa etiqueta girada de forma centralizada ao longo do documento
+    y_curr = 400 # Começa a carimbar a partir do pixel 400
+    spacing = 800 # Repete a cada 800 pixels de altura
+    
     while y_curr < final_height_needed:
-        # Centraliza horizontalmente
-        draw_x = (width - wm_w) / 2
-        # Posiciona verticalmente
-        draw_y = y_curr - (wm_h / 2)
-        draw_wm.multiline_text((draw_x, draw_y), texto_wm, font=font_watermark, fill=wm_fill_color, align='center')
+        # Calcula a posição X para ficar exatamente no meio do documento de 850px de largura
+        paste_x = int((width - rot_w) / 2)
+        paste_y = int(y_curr - (rot_h / 2))
+        
+        # Cola a etiqueta rotacionada na imagem principal
+        image.alpha_composite(txt_rotated, dest=(paste_x, paste_y))
         y_curr += spacing
     
-    # Rotaciona a camada inteira de marcas d'água
-    watermark_rotated = watermark_base.rotate(30, resample=Image.BICUBIC, expand=False)
-    
-    # Compoe sobre a imagem principal
-    image = Image.alpha_composite(image, watermark_rotated)
-    
-    # Corta a imagem onde o conteúdo efetivamente terminou
+    # Corta o espaço em branco excedente do final do canvas
     image = image.crop((0, 0, width, final_height_needed))
     
     return image.convert("RGB")
