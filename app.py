@@ -559,7 +559,7 @@ with tab_imovel:
 # --- ABA 2: SOLICITAÇÃO DE LIMPEZA ---
 with tab_rotina:
     st.markdown("### 🗓️ Visão Geral da Minha Agenda de Limpeza")
-    st.markdown("<p style='text-align: center; color: #555; font-size: 15px; margin-bottom: 10px; background-color: #E8F5E9; padding: 10px; border-radius: 8px;'>Para verificar outras semanas ou datas, clique nas setinhas para <strong>&lt; (esquerda)</strong> ou <strong>&gt; (direita)</strong> na parte superior do calendário abaixo.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #555; font-size: 15px; margin-bottom: 10px; background-color: #E8F5E9; padding: 10px; border-radius: 8px;'>Para verificar outras semanas ou datas, clique nas setinhas para <strong>&lt; (esquerda)</strong> ou <strong>&gt; (direita)</strong> na parte superior do calendário.</p>", unsafe_allow_html=True)
     
     cal_url = "https://calendar.google.com/calendar/embed?src=sandramjo26%40gmail.com&mode=WEEK"
     components.iframe(cal_url, height=650, scrolling=True)
