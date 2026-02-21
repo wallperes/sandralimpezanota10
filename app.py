@@ -322,7 +322,7 @@ with tab_imovel:
         st.markdown("### 🛏️ 3. Quartos e Roupa de Cama")
         i_guardar = st.text_input("Onde você costuma guardar as roupas de cama e banho limpas? 🧺")
         i_suja = st.text_input("Onde deixo a roupa suja que os hóspedes usaram? ")
-        i_montar = st.text_input("Como você prefere que eu monte as camas? Quantos travesseiros? Edredom? Lençol de elástico? Peço para me contar com detalhes como é sua forma de trabalho pois cada casa dispõe de itens de cama mesa e banho distintos.")
+        i_montar = st.text_area("Como você prefere que eu monte as camas? Quantos travesseiros? Edredom? Lençol de elástico? Peço para me contar com detalhes como é sua forma de trabalho pois cada casa dispõe de itens de cama mesa e banho distintos.")
         
         st.write("")
         st.markdown("### 🚿 4. Banheiros e Amenities")
