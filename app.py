@@ -5,9 +5,32 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps
 import io
 import textwrap
 import base64
+import requests # NOVO: Biblioteca para buscar o CEP na internet
 
 # --- CONFIGURAÇÕES DO AMBIENTE ---
 st.set_page_config(page_title="Gestão de Limpeza Automatizada", page_icon="✨", layout="centered")
+
+# --- INICIALIZAÇÃO DE VARIÁVEIS DE MEMÓRIA (SESSION STATE) ---
+# Isso garante que os campos de endereço não deem erro antes de serem preenchidos
+if "rua_input" not in st.session_state: st.session_state.rua_input = ""
+if "bairro_input" not in st.session_state: st.session_state.bairro_input = ""
+if "cidade_uf_input" not in st.session_state: st.session_state.cidade_uf_input = ""
+
+# --- FUNÇÃO DE BUSCA DO CEP ---
+def buscar_cep():
+    cep = st.session_state.cep_input.replace("-", "").replace(".", "").strip()
+    if len(cep) == 8 and cep.isdigit():
+        try:
+            # Consulta a API gratuita do ViaCEP
+            response = requests.get(f"https://viacep.com.br/ws/{cep}/json/", timeout=5)
+            data = response.json()
+            if "erro" not in data:
+                # Se achou o CEP, preenche a memória do aplicativo com os dados
+                st.session_state.rua_input = data.get("logradouro", "")
+                st.session_state.bairro_input = data.get("bairro", "")
+                st.session_state.cidade_uf_input = f"{data.get('localidade', '')} / {data.get('uf', '')}"
+        except:
+            pass # Se der erro de internet ou ViaCEP fora do ar, ignora silenciosamente
 
 # --- ESTILOS VISUAIS (O "BANHO DE LOJA" BLINDADO) ---
 st.markdown("""
@@ -115,7 +138,6 @@ st.markdown("""
 # ==============================================================================
 def criar_imagem_profissional(dados, tipo):
     width = 850
-    # Aumentado para 4200 para garantir que a lista de checkboxes caiba na imagem
     height = 4200 if tipo == "imovel" else 1500
     
     image = Image.new("RGBA", (width, height), "white")
@@ -164,9 +186,7 @@ def criar_imagem_profissional(dados, tipo):
             draw.text((margin, y_pos), f"{rotulo}:", font=font_header, fill="#424242")
             y_pos += 30
             
-            # Ajuste crucial: divide o texto por quebras de linha manuais antes de quebrar automaticamente (wrap)
             for paragrafo in val_str.split('\n'):
-                # Wrap garante que o texto não ultrapasse a margem da imagem
                 linhas_wrap = textwrap.wrap(paragrafo, width=80) if paragrafo.strip() else [""]
                 for linha in linhas_wrap:
                     draw.text((margin, y_pos), linha, font=font_text, fill="#757575")
@@ -272,7 +292,28 @@ with tab_imovel:
     with st.form("form_imovel"):
         st.markdown("### 📍 1. Identificação do Imóvel")
         i_prop = st.text_input("Para começar, qual o nome do proprietário ou responsável por esse imóvel? 👤")
-        i_end = st.text_input("Qual é o endereço completo do imóvel? (Rua, número, bairro e CEP, se souber) 📍")
+        
+        # --- NOVO BLOCO DE ENDEREÇO COM BUSCA DE CEP ---
+        st.markdown("<div style='background-color: #E8F5E9; padding: 15px; border-radius: 10px; margin-bottom: 15px;'><span style='color: #188038; font-weight: bold;'>💡 Dica de Ouro:</span> Se você souber o CEP, digite apenas os números (sem traços) abaixo e os dados do endereço serão preenchidos automaticamente! Se não souber, pode deixar em branco e preencher o resto manualmente.</div>", unsafe_allow_html=True)
+        
+        i_cep = st.text_input("CEP (Apenas números)", key="cep_input", on_change=buscar_cep)
+        
+        i_rua = st.text_input("Logradouro (Rua, Avenida, etc.)", key="rua_input")
+        
+        col_end1, col_end2 = st.columns(2)
+        with col_end1:
+            i_bairro = st.text_input("Bairro", key="bairro_input")
+        with col_end2:
+            i_cidade_uf = st.text_input("Cidade / UF", key="cidade_uf_input")
+            
+        st.markdown("<br>⬇️ **Faltam apenas estes dois campos de endereço:**", unsafe_allow_html=True)
+        col_end3, col_end4 = st.columns(2)
+        with col_end3:
+            i_num = st.text_input("Número 🔢")
+        with col_end4:
+            i_comp = st.text_input("Complemento (Casa, Apto, Bloco...)")
+        # -----------------------------------------------
+
         i_cond = st.text_input("Qual é o nome do Edifício ou Condomínio? 🏢 (Ex: Rio Wonder)")
         i_apto = st.text_input("Qual é a Torre ou Bloco, e o número do apartamento? 🏗️🚪")
         
@@ -309,7 +350,6 @@ with tab_imovel:
             "Torradeira", "Chaleira elétrica", "Batedeira", "Lava-louças"
         ]
         
-        # Criação de colunas para organizar os checkboxes
         col1, col2 = st.columns(2)
         eletros_selecionados = {}
         
@@ -348,13 +388,21 @@ with tab_imovel:
             lista_eletros_texto.append("[   ] Outros")
             
         str_eletros = "\n".join(lista_eletros_texto)
+
+        # Montar o endereço final em uma linha
+        endereco_final = f"{i_rua}"
+        if i_num: endereco_final += f", {i_num}"
+        if i_comp: endereco_final += f" - {i_comp}"
+        if i_bairro: endereco_final += f" - {i_bairro}"
+        if i_cidade_uf: endereco_final += f", {i_cidade_uf}"
+        if i_cep: endereco_final += f" (CEP: {i_cep})"
             
         payload_imovel = {
             "nome_prop": i_prop,
             "categorias": [
                 ("📍 IDENTIFICAÇÃO DO IMÓVEL", [
                     ("Responsável", i_prop),
-                    ("Endereço", i_end),
+                    ("Endereço Completo", endereco_final),
                     ("Condomínio", i_cond),
                     ("Torre/Apto", i_apto)
                 ]),
@@ -403,10 +451,8 @@ with tab_imovel:
 # --- ABA 2: SOLICITAÇÃO DE LIMPEZA ---
 with tab_rotina:
     st.markdown("### 🗓️ Visão Geral da Agenda")
-    # Texto instrucional adicionado
     st.markdown("<p style='text-align: center; color: #555; font-size: 15px; margin-bottom: 10px; background-color: #E8F5E9; padding: 10px; border-radius: 8px;'>Para verificar outras semanas ou datas, clique nas setinhas para <strong>&lt; (esquerda)</strong> ou <strong>&gt; (direita)</strong> na parte superior do calendário abaixo.</p>", unsafe_allow_html=True)
     
-    # Calendário atualizado para modo SEMANAL (WEEK) e altura maior (650)
     cal_url = "https://calendar.google.com/calendar/embed?src=sandramjo26%40gmail.com&mode=WEEK"
     components.iframe(cal_url, height=650, scrolling=True)
 
