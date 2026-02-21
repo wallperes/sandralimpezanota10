@@ -181,7 +181,7 @@ def criar_imagem_profissional(dados, tipo):
     try:
         font_alert = ImageFont.truetype("DejaVuSans-Bold.ttf", 20)
         font_watermark = ImageFont.truetype("DejaVuSans-Bold.ttf", 55)
-        font_title = ImageFont.truetype("DejaVuSans-Bold.ttf", 36) # Título reduzido de 45 para 36
+        font_title = ImageFont.truetype("DejaVuSans-Bold.ttf", 36)
         font_header = ImageFont.truetype("DejaVuSans-Bold.ttf", 20) 
         font_text = ImageFont.truetype("DejaVuSans.ttf", 20)
     except:
@@ -221,14 +221,14 @@ def criar_imagem_profissional(dados, tipo):
     # Fundo do cabeçalho
     draw.rectangle([(0, offset_y), (width, 160 + offset_y)], fill=cor_topo)
     
-    # Quebra do Título (protegido contra vazamentos)
+    # Quebra do Título
     linhas_titulo = quebrar_texto_por_pixels(titulo_texto, font_title, width - 90, draw)
     y_titulo = 30 + offset_y
     for linha in linhas_titulo:
         draw.text((45, y_titulo), linha, font=font_title, fill="white")
         y_titulo += 40
         
-    # Quebra do Subtítulo (protegido)
+    # Quebra do Subtítulo 
     sub_linhas = quebrar_texto_por_pixels(subtitulo, font_text, width - 90, draw)
     sub_y = y_titulo + 10
     for s_linha in sub_linhas:
@@ -256,7 +256,7 @@ def criar_imagem_profissional(dados, tipo):
                 
             y_pos += 5 # Respiro entre pergunta e resposta
             
-            # Escreve a Resposta (mantendo apenas a cor verde para destaque)
+            # Escreve a Resposta 
             linhas_resposta = quebrar_texto_por_pixels(str(val_str), font_text, largura_maxima_texto, draw)
             for linha in linhas_resposta:
                 draw.text((margin, y_pos), linha, font=font_text, fill="#188038")
@@ -361,12 +361,23 @@ tab_imovel, tab_rotina = st.tabs(["🏢 Ficha do Imóvel", "📅 Solicitação d
 
 # --- ABA 1: FICHA DO IMÓVEL ---
 with tab_imovel:
-    st.info("Olá! Para eu deixar tudo impecável e seguir exatamente o seu padrão de qualidade (e não te incomodar com perguntas bem na hora da limpeza), preparei este ficha de cadastro de imóvel. Sei que são várias perguntas, mas respondendo isso uma única vez, eu salvo no meu sistema e sigo sempre o seu jeito! Quando puder, me confirma? 🥰✨")
+    # --- NOVA APRESENTAÇÃO PROFISSIONAL E INTIMISTA ---
+    st.markdown("""
+    <div style='background-color: #E8F5E9; padding: 25px; border-radius: 15px; border-left: 6px solid #188038; margin-bottom: 25px;'>
+        <h3 style='color: #188038; margin-top: 0; font-size: 22px;'>Olá, eu sou a Sandra! ✨</h3>
+        <p style='color: #424242; font-size: 16px; line-height: 1.6;'>
+        Muito prazer em receber você aqui. Com a minha experiência no cuidado e limpeza de imóveis de temporada, aprendi que a higienização impecável é o coração de uma avaliação 5 estrelas. Trato cada espaço com o máximo de carinho, como se fosse a minha própria casa, pensando sempre no conforto e no encantamento do seu hóspede.
+        </p>
+        <p style='color: #424242; font-size: 16px; line-height: 1.6; margin-bottom: 0;'>
+        Criei esta ficha justamente para profissionalizar o nosso alinhamento. Com essas respostas, registro todos os detalhes essenciais do seu imóvel no meu sistema e sigo exatamente o seu padrão de qualidade, sem precisar te incomodar com perguntas bem na hora da limpeza. Quando puder, preencha com calma. Vai ser um prazer cuidar do seu espaço! 🥰
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
     st.markdown("### 🔎 Cadastro do Imóvel - Digite o CEP abaixo")
         
     i_cep = st.text_input("CEP", label_visibility="collapsed", key="cep_input", on_change=buscar_cep)
-    st.markdown("<div style='background-color: #E8F5E9; padding: 15px; border-radius: 10px; margin-bottom: 15px;'><span style='color: #188038; font-weight: bold;'>💡 Dica de Ouro:</span> Caso não saiba o CEP, <strong>ignore esse campo e continue o preenchimento do restante da ficha</strong>. Porém, se você souber, facilitará o preenchimento, pois o endereço será preenchido automaticamente na ficha abaixo!</div>", unsafe_allow_html=True)
+    st.markdown("<div style='background-color: #F4F7F6; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #E0E0E0;'><span style='color: #188038; font-weight: bold;'>💡 Dica:</span> Caso não saiba o CEP, <strong>ignore esse campo e continue preenchendo o restante da ficha</strong>. Se souber, o endereço será preenchido automaticamente!</div>", unsafe_allow_html=True)
     
     with st.form("form_imovel"):
         st.markdown("### 📍 1. Identificação do Imóvel")
@@ -388,6 +399,10 @@ with tab_imovel:
 
         i_cond = st.text_input("Qual é o nome do Edifício ou Condomínio? 🏢 (Ex: Rio Wonder)")
         i_prop = st.text_input("Qual o nome do proprietário ou responsável por esse imóvel? 👤")
+        
+        # --- NOVA PERGUNTA DE CONFIGURAÇÃO DO IMÓVEL ---
+        st.write("")
+        i_configuracao = st.text_input("Como é a configuração do seu imóvel? Quantos quartos, banheiros e varandas ele possui? (Se for um Studio, basta escrever 'Studio') 🏠")
         
         st.write("") 
         st.markdown("### 🧹 2. Equipamentos, Climatização e Materiais")
@@ -478,7 +493,8 @@ with tab_imovel:
                 ("📍 IDENTIFICAÇÃO DO IMÓVEL", [
                     ("Qual o nome do proprietário ou responsável por esse imóvel? 👤", i_prop),
                     ("Endereço Completo", endereco_final),
-                    ("Qual é o nome do Edifício ou Condomínio? 🏢", i_cond)
+                    ("Qual é o nome do Edifício ou Condomínio? 🏢", i_cond),
+                    ("Configuração do Imóvel (Quartos, Banheiros, etc) 🏠", i_configuracao) # --- INCLUÍDO NO PDF AQUI ---
                 ]),
                 ("🧹 EQUIPAMENTOS, CLIMATIZAÇÃO E MATERIAIS", [
                     ("Aí no apartamento tem um aspirador de pó funcionando direitinho? Ah, e a voltagem das tomadas é 110v ou 220v? 🔌", i_aspirador),
@@ -536,7 +552,7 @@ with tab_rotina:
         
         q_cadastro = st.radio("Me tira uma dúvida rápida: a gente já fez a Ficha Técnica desse seu imóvel antes, ou é a nossa primeira vez lá? 📝", ["Já fizemos a Ficha", "Primeira vez"])
         q_ident = st.text_input("Ah, maravilha! Então me lembra só qual é a Torre e o número do apartamento para eu puxar o seu padrão de qualidade aqui? 🏢🚪 (Ex: Torre Formosa, Apto 509)")
-        q_data = st.date_input("Qual é a data gostaria de reservar? 🗓️✅", date.today())
+        q_data = st.date_input("Qual é a data gostaria de reservar? 🗓️✅", date.today(), format="DD/MM/YYYY")
         
         st.write("")
         st.markdown("### ⏰ Horários e Check-in")
