@@ -377,6 +377,17 @@ def injetar_botao_compartilhar(img, texto_corpo, nome_arquivo="ordem_servico.png
 # ==============================================================================
 st.markdown("<h1 style='text-align: center; color: #188038; margin-bottom: 5px;'>✨ App da Sandra</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #666; font-size: 16px; margin-bottom: 30px;'>Organização e qualidade para deixar tudo impecável!</p>", unsafe_allow_html=True)
+st.markdown("""
+    <div style='background-color: #E8F5E9; padding: 25px; border-radius: 15px; border-left: 6px solid #188038; margin-bottom: 25px;'>
+        <h3 style='color: #188038; margin-top: 0; font-size: 22px;'>Olá, eu sou a Sandra! ✨</h3>
+        <p style='color: #424242; font-size: 16px; line-height: 1.6;'>
+        Muito prazer em receber você aqui. Com a minha experiência no cuidado e limpeza de imóveis de temporada, aprendi que a higienização impecável é o coração de uma avaliação 5 estrelas. Trato cada espaço com o máximo de carinho, como se fosse a minha própria casa, pensando sempre no conforto e no encantamento do seu hóspede.
+        </p>
+        <p style='color: #424242; font-size: 16px; line-height: 1.6; margin-bottom: 0;'>
+        Criei esta ficha justamente para profissionalizar o nosso alinhamento. Com essas respostas, registro todos os detalhes essenciais do seu imóvel no meu sistema e sigo exatamente o seu padrão de qualidade, sem precisar te incomodar com perguntas bem na hora da limpeza. Quando puder, preencha com calma. Vai ser um prazer cuidar do seu espaço! 🥰
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
 # Abas
 tab_imovel, tab_rotina = st.tabs(["🏢 Ficha do Imóvel", "📅 Solicitação de Limpeza"])
