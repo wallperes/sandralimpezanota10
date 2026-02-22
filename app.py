@@ -385,9 +385,10 @@ tab_imovel, tab_rotina = st.tabs(["🏢 Ficha do Imóvel", "📅 Solicitação d
 # --- ABA 1: FICHA DO IMÓVEL ---
 with tab_imovel:
     st.markdown("### 🔎 Cadastro do Imóvel - Digite o CEP abaixo")
-        
+    
+    st.markdown("<div style='background-color: #F4F7F6; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #E0E0E0;'><span style='color: #188038; font-weight: bold;'>💡 Dica:</span> Caso não saiba o CEP, <strong>ignore esse campo e continue preenchendo o restante da ficha</strong>. Se souber, o endereço será preenchido automaticamente!</div>", unsafe_allow_html=True)    
     i_cep = st.text_input("CEP", label_visibility="collapsed", key="cep_input", on_change=buscar_cep)
-    st.markdown("<div style='background-color: #F4F7F6; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #E0E0E0;'><span style='color: #188038; font-weight: bold;'>💡 Dica:</span> Caso não saiba o CEP, <strong>ignore esse campo e continue preenchendo o restante da ficha</strong>. Se souber, o endereço será preenchido automaticamente!</div>", unsafe_allow_html=True)
+    
     
     with st.form("form_imovel"):
         st.markdown("### 📍 1. Identificação do Imóvel")
