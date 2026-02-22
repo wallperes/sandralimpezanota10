@@ -526,13 +526,14 @@ with tab_imovel:
                 ])
             ]
         }
-
+        msg_fch = f"Ficha Técnica Atualizada: {i_prop}. Muito obrigada por preencher!"
+        injetar_botao_compartilhar(img_fch, msg_fch, f"Ficha_{i_prop}.png")
+        
         img_fch = criar_imagem_profissional(payload_imovel, "imovel")
         st.markdown("### Documento Gerado com Sucesso! 🎉")
         st.image(img_fch, use_container_width=True)
         
-        msg_fch = f"Ficha Técnica Atualizada: {i_prop}. Muito obrigada por preencher!"
-        injetar_botao_compartilhar(img_fch, msg_fch, f"Ficha_{i_prop}.png")
+
 
 # --- ABA 2: SOLICITAÇÃO DE LIMPEZA ---
 with tab_rotina:
@@ -616,10 +617,11 @@ with tab_rotina:
                 ])
             ]
         }
+        msg_whatsapp = f"Olá! Segue a Ordem de Serviço confirmada para o dia {dt_str} no apto {q_ident}."
+        injetar_botao_compartilhar(img_os, msg_whatsapp, f"OS_{dt_str.replace('/','-')}.png")
         
         img_os = criar_imagem_profissional(payload, "rotina")
         st.markdown("### Documento Gerado com Sucesso! 🎉")
         st.image(img_os, use_container_width=True)
         
-        msg_whatsapp = f"Olá! Segue a Ordem de Serviço confirmada para o dia {dt_str} no apto {q_ident}."
-        injetar_botao_compartilhar(img_os, msg_whatsapp, f"OS_{dt_str.replace('/','-')}.png")
+
