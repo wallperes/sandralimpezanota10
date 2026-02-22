@@ -6,6 +6,7 @@ import io
 import textwrap
 import base64
 import requests 
+from st_keyup import st_keyup
 
 # --- CONFIGURAÇÕES DO AMBIENTE ---
 st.set_page_config(page_title="Gestão de Limpeza Automatizada", page_icon="✨", layout="centered")
@@ -15,26 +16,17 @@ if "rua_input" not in st.session_state: st.session_state.rua_input = ""
 if "bairro_input" not in st.session_state: st.session_state.bairro_input = ""
 if "cidade_uf_input" not in st.session_state: st.session_state.cidade_uf_input = ""
 
-# --- FUNÇÃO DE BUSCA DO CEP ---
-def buscar_cep():
-    # Pega o que foi digitado e limpa traços, pontos e ESPAÇOS
-    cep_bruto = st.session_state.cep_input
-    cep_limpo = cep_bruto.replace("-", "").replace(".", "").replace(" ", "").strip()
-    
-    # Atualiza a caixinha na tela para mostrar o CEP limpo
-    st.session_state.cep_input = cep_limpo
-    
-    # Valida se sobraram exatamente 8 números (Padrão de CEP Brasileiro)
-    if len(cep_limpo) == 8 and cep_limpo.isdigit():
-        try:
-            response = requests.get(f"https://viacep.com.br/ws/{cep_limpo}/json/", timeout=5)
-            data = response.json()
-            if "erro" not in data:
-                st.session_state.rua_input = data.get("logradouro", "")
-                st.session_state.bairro_input = data.get("bairro", "")
-                st.session_state.cidade_uf_input = f"{data.get('localidade', '')} / {data.get('uf', '')}"
-        except:
-            pass 
+# --- FUNÇÃO DE BUSCA DO CEP EM TEMPO REAL ---
+def buscar_cep_tempo_real(cep_limpo):
+    try:
+        response = requests.get(f"https://viacep.com.br/ws/{cep_limpo}/json/", timeout=5)
+        data = response.json()
+        if "erro" not in data:
+            st.session_state.rua_input = data.get("logradouro", "")
+            st.session_state.bairro_input = data.get("bairro", "")
+            st.session_state.cidade_uf_input = f"{data.get('localidade', '')} / {data.get('uf', '')}"
+    except:
+        pass 
 
 # --- ESTILOS VISUAIS ---
 st.markdown("""
@@ -129,7 +121,7 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# NOVA FUNÇÃO: QUEBRA DE TEXTO BASEADA EM PIXELS E NÃO EM CARACTERES
+# FUNÇÃO: QUEBRA DE TEXTO BASEADA EM PIXELS E NÃO EM CARACTERES
 # ==============================================================================
 def quebrar_texto_por_pixels(texto, fonte, largura_maxima, draw):
     linhas_finais = []
@@ -175,14 +167,12 @@ def criar_imagem_profissional(dados, tipo):
     draw = ImageDraw.Draw(image)
 
     try:
-        # Tenta carregar fontes TrueType se disponíveis no sistema/pasta
         font_alert = ImageFont.truetype("DejaVuSans-Bold.ttf", 20)
         font_watermark = ImageFont.truetype("DejaVuSans-Bold.ttf", 55)
         font_title = ImageFont.truetype("DejaVuSans-Bold.ttf", 36)
         font_header = ImageFont.truetype("DejaVuSans-Bold.ttf", 20) 
         font_text = ImageFont.truetype("DejaVuSans.ttf", 20)
     except:
-        # Fallback para fonte padrão se não encontrar as personalizadas
         font_alert = font_watermark = font_title = font_header = font_text = ImageFont.load_default()
 
     # --- 1. AJUSTE DA FAIXA VERMELHA (ALERTA) ---
@@ -212,16 +202,13 @@ def criar_imagem_profissional(dados, tipo):
         cor_topo, titulo_texto = "#01579b", "FICHA TÉCNICA DO IMÓVEL"
         subtitulo = f"Propriedade Identificada: {dados.get('nome_prop', '-')}"
     else:
-        # --- ALTERAÇÃO AQUI PARA MUDAR O TEXTO DA SOLICITAÇÃO ---
         cor_topo, titulo_texto = "#188038", "SOLICITAÇÃO DE SERVIÇO"
         
         data_limp = dados.get('data_limpeza', '-')
-        # Pega o horário do payload, se não existir, usa um padrão.
         hora_limp = dados.get('horario_limpeza', 'Horário a combinar')
         if not hora_limp.strip(): hora_limp = "Horário a combinar"
         
         subtitulo = f"Para o dia {data_limp} - {hora_limp}"
-        # --------------------------------------------------------
 
     draw.rectangle([(0, offset_y), (width, 160 + offset_y)], fill=cor_topo)
     
@@ -385,10 +372,16 @@ tab_imovel, tab_rotina = st.tabs(["🏢 Ficha do Imóvel", "📅 Solicitação d
 # --- ABA 1: FICHA DO IMÓVEL ---
 with tab_imovel:
     st.markdown("### 🔎 Cadastro do Imóvel - Digite o CEP abaixo")
+        
+    i_cep = st_keyup("CEP", label_visibility="collapsed", key="cep_input")
     
-    st.markdown("<div style='background-color: #F4F7F6; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #E0E0E0;'><span style='color: #188038; font-weight: bold;'>💡 Dica:</span> Caso não saiba o CEP, <strong>ignore esse campo e continue preenchendo o restante da ficha</strong>. Se souber, o endereço será preenchido automaticamente!</div>", unsafe_allow_html=True)    
-    i_cep = st.text_input("CEP", label_visibility="collapsed", key="cep_input", on_change=buscar_cep)
-    
+    # Verificação do CEP em tempo real
+    if i_cep:
+        cep_limpo = i_cep.replace("-", "").replace(".", "").replace(" ", "").strip()
+        if len(cep_limpo) == 8 and cep_limpo.isdigit():
+            buscar_cep_tempo_real(cep_limpo)
+
+    st.markdown("<div style='background-color: #F4F7F6; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #E0E0E0;'><span style='color: #188038; font-weight: bold;'>💡 Dica:</span> Caso não saiba o CEP, <strong>ignore esse campo e continue preenchendo o restante da ficha</strong>. Se souber, o endereço será preenchido automaticamente!</div>", unsafe_allow_html=True)
     
     with st.form("form_imovel"):
         st.markdown("### 📍 1. Identificação do Imóvel")
@@ -537,7 +530,6 @@ with tab_imovel:
             ]
         }
         
-        # --- MUDANÇA: Ordem corrigida (Gera imagem -> Mostra Botão -> Mostra Imagem) ---
         img_fch = criar_imagem_profissional(payload_imovel, "imovel")
         
         st.markdown("### Documento Gerado com Sucesso! 🎉")
@@ -546,7 +538,6 @@ with tab_imovel:
         injetar_botao_compartilhar(img_fch, msg_fch, f"Ficha_{i_prop}.png")
         
         st.image(img_fch, use_container_width=True)
-        # -----------------------------------------------------------------------------
 
 
 # --- ABA 2: SOLICITAÇÃO DE LIMPEZA ---
@@ -606,7 +597,6 @@ with tab_rotina:
 
         payload = {
             "data_limpeza": dt_str,
-            # MUDANÇA: Adicionado o horário ao payload para usar no título da imagem
             "horario_limpeza": q_horario, 
             "categorias": [
                 ("📋 INFORMAÇÕES GERAIS E HORÁRIOS", [
@@ -634,14 +624,11 @@ with tab_rotina:
             ]
         }
         
-        # --- MUDANÇA: Ordem corrigida e Texto do WhatsApp alterado ---
         img_os = criar_imagem_profissional(payload, "rotina")
 
         st.markdown("### Solicitação Gerada! 🎉")
         
-        # Texto do WhatsApp alterado para indicar solicitação, não confirmação
         msg_whatsapp = f"Olá! Realizei uma solicitação de serviço para o dia {dt_str} no apto {q_ident}. Aguardo confirmação."
         injetar_botao_compartilhar(img_os, msg_whatsapp, f"Solicitacao_{dt_str.replace('/','-')}.png")
         
         st.image(img_os, use_container_width=True)
-        # -------------------------------------------------------------
