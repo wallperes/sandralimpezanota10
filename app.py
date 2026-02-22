@@ -117,6 +117,11 @@ st.markdown("""
     [data-baseweb="tab"][aria-selected="true"] {
         background-color: #E8F5E9 !important;
     }
+    /* Ajuste de altura para o campo do CEP em tempo real */
+    iframe[title*="keyup"] {
+        height: 45px !important;
+        margin-bottom: -10px !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
