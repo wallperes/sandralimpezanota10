@@ -363,10 +363,10 @@ st.markdown("""
     <div style='background-color: #E8F5E9; padding: 25px; border-radius: 15px; border-left: 6px solid #188038; margin-bottom: 25px;'>
         <h3 style='color: #188038; margin-top: 0; font-size: 22px;'>Olá, eu sou a Sandra! ✨</h3>
         <p style='color: #424242; font-size: 16px; line-height: 1.6;'>
-        Muito prazer em receber você aqui. Com a minha experiência no cuidado e limpeza de imóveis de temporada, aprendi que a higienização é o coração de uma avaliação 5 estrelas.
+        Muito prazer em receber você aqui. Com a minha experiência no cuidado e limpeza de imóveis de temporada, aprendi que a higienização é o coração de uma avaliação 5 estrelas. 
         </p>
         <p style='color: #424242; font-size: 16px; line-height: 1.6; margin-bottom: 0;'>
-        Criei esta ficha justamente para que sejam detalhadas as informações necessárias personalizando a limpeza do seu espaço. Sei que são várias perguntas, mas com os seus detalhes e respostas consigo registrar todas as informações essenciais do seu imóvel e seguir exatamente o seu padrão de trabalho. Quando puder, preencha com calma e me envie a Ficha que será gerada por WhatsApp. Obrigada pela confiança! 🥰
+        Criei esta ficha para entender cada detalhe do seu espaço. Sei que são várias perguntas, mas as respostas permitem registrar o seu padrão de trabalho e garantir que tudo saia exatamente como você gosta. Quando puder, preencha com calma e me envie a Ficha que será gerada por WhatsApp. Obrigada pela confiança! 🥰
         </p>
     </div>
     """, unsafe_allow_html=True)
